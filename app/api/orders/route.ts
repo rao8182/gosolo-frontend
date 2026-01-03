@@ -167,8 +167,6 @@ export async function POST(req: Request) {
       return newOrder;
     });
 
-    console.log("✅ ORDER CREATED:", order.id);
-
     // ✅ RETURN ORDER ID + RAZORPAY ORDER ID
     return NextResponse.json(
       { 

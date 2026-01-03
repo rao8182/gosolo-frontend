@@ -40,7 +40,20 @@ export default function CheckoutPage() {
         }),
       });
   
-      const data = await res.json();
+      // Get response text first to see what we're getting
+      const responseText = await res.text();
+      console.log("Response status:", res.status);
+      console.log("Response text:", responseText);
+
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError);
+        console.error("Response was:", responseText);
+        throw new Error("Server returned invalid response. Please check the console.");
+      }
   
       // ❌ API failed OR orderId missing → stop
       if (!res.ok || !data?.orderId) {
@@ -54,7 +67,7 @@ export default function CheckoutPage() {
       router.push(`/order-success?orderId=${data.orderId}`);
     } catch (error) {
       console.error("PLACE ORDER ERROR:", error);
-      alert("Failed to place order. Please try again.");
+      alert(`Failed to place order: ${error.message}`);
     } finally {
       setLoading(false);
     }

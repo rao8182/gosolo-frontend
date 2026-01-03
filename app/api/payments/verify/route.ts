@@ -16,7 +16,6 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("PAYMENT VERIFICATION REQUEST:", body);
 
     const {
       razorpay_order_id,
@@ -40,14 +39,11 @@ export async function POST(req: Request) {
       .digest("hex");
 
     if (generatedSignature !== razorpay_signature) {
-      console.error("❌ SIGNATURE VERIFICATION FAILED");
       return NextResponse.json(
         { error: "Invalid payment signature" },
         { status: 400, headers: corsHeaders }
       );
     }
-
-    console.log("✅ SIGNATURE VERIFIED");
 
     // ✅ UPDATE PAYMENT, ORDER STATUS, AND REDUCE STOCK IN TRANSACTION
     await prisma.$transaction(async (tx) => {

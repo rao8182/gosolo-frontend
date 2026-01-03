@@ -54,6 +54,9 @@ model Payment {
   razorpayOrderId   String
   razorpayPaymentId String?
   razorpaySignature String?
+  amount            Int
+  currency          String   @default("INR")
+  provider          String   @default("RAZORPAY")
   status            String
   createdAt         DateTime @default(now())
 

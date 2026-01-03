@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       const missingIds = productIds.filter((id: string) => !foundIds.includes(id));
       return NextResponse.json(
         { error: `Invalid product IDs: ${missingIds.join(", ")}` },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       if (!dbProduct) {
         return NextResponse.json(
           { error: `Product ${item.id} not found` },
-          { status: 400 }
+          { status: 400, headers: corsHeaders }
         );
       }
 
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       if (dbProduct.stock < item.quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for ${dbProduct.name}. Available: ${dbProduct.stock}` },
-          { status: 400 }
+          { status: 400, headers: corsHeaders }
         );
       }
     }

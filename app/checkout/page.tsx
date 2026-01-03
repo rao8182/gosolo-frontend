@@ -4,6 +4,13 @@ import { useCartStore } from "@/store/cartStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+// Declare Razorpay type for TypeScript
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const router = useRouter();
@@ -24,15 +31,16 @@ export default function CheckoutPage() {
     );
   }
 
-  // 🔹 TASK 14: PLACE ORDER (DB ONLY, NO PAYMENT YET)
+  // 🔹 RAZORPAY PAYMENT HANDLER
   const placeOrder = async () => {
     try {
       setLoading(true);
-  
+
       console.log("Sending order request...");
       console.log("Items:", items);
       console.log("Total:", total);
 
+      // Step 1: Create order in backend (DB + Razorpay)
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -43,17 +51,14 @@ export default function CheckoutPage() {
           totalAmount: total,
         }),
       });
-  
+
       console.log("Response received:");
       console.log("Status:", res.status);
       console.log("Status Text:", res.statusText);
-      console.log("Headers:", Object.fromEntries(res.headers.entries()));
 
-      // Get response text first to see what we're getting
       const responseText = await res.text();
       console.log("Response text:", responseText);
 
-      // Try to parse as JSON
       let data;
       try {
         data = JSON.parse(responseText);
@@ -61,26 +66,82 @@ export default function CheckoutPage() {
       } catch (parseError) {
         console.error("Failed to parse response as JSON");
         console.error("Parse error:", parseError);
-        console.error("Raw response was:", responseText);
         throw new Error(`Server returned invalid response: ${responseText.substring(0, 100)}`);
       }
-  
-      // ❌ API failed OR orderId missing → stop
-      if (!res.ok || !data?.orderId) {
+
+      if (!res.ok || !data?.orderId || !data?.razorpayOrderId) {
         throw new Error(data?.error || "Order creation failed");
       }
-  
-      console.log("Order created successfully with ID:", data.orderId);
 
-      // ✅ Order safely created → clear cart
-      clearCart();
-  
-      // ✅ Redirect with REAL orderId
-      router.push(`/order-success?orderId=${data.orderId}`);
-    } catch (error) {
+      console.log("Order created:", data.orderId);
+      console.log("Razorpay Order ID:", data.razorpayOrderId);
+
+      // Step 2: Open Razorpay Checkout
+      const options = {
+        key: "rzp_test_RzWT68NDWaooal", // Razorpay Key ID
+        amount: data.amount * 100, // Amount in paise
+        currency: data.currency,
+        name: "GoSolo",
+        description: "Gummies Purchase",
+        order_id: data.razorpayOrderId,
+        handler: async function (response: any) {
+          console.log("Payment successful:", response);
+
+          // Step 3: Verify payment on backend
+          try {
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderId: data.orderId,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok && verifyData.success) {
+              console.log("Payment verified successfully");
+              
+              // Clear cart
+              clearCart();
+
+              // Redirect to success page
+              router.push(`/order-success?orderId=${data.orderId}`);
+            } else {
+              throw new Error("Payment verification failed");
+            }
+          } catch (verifyError) {
+            console.error("Verification error:", verifyError);
+            router.push("/order-failure");
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+        theme: {
+          color: "#FF6B35",
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("Payment cancelled by user");
+            setLoading(false);
+            router.push("/order-failure");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
       console.error("PLACE ORDER ERROR:", error);
       alert(`Failed to place order: ${error.message}`);
-    } finally {
       setLoading(false);
     }
   };

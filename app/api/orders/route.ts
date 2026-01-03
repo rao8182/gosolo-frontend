@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "Cart is empty" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     if (!totalAmount || totalAmount <= 0) {
       return NextResponse.json(
         { error: "Invalid total amount" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 

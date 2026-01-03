@@ -36,10 +36,6 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
 
-      console.log("Sending order request...");
-      console.log("Items:", items);
-      console.log("Total:", total);
-
       // Step 1: Create order in backend (DB + Razorpay)
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -52,29 +48,18 @@ export default function CheckoutPage() {
         }),
       });
 
-      console.log("Response received:");
-      console.log("Status:", res.status);
-      console.log("Status Text:", res.statusText);
-
       const responseText = await res.text();
-      console.log("Response text:", responseText);
 
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log("Parsed data:", data);
       } catch (parseError) {
-        console.error("Failed to parse response as JSON");
-        console.error("Parse error:", parseError);
-        throw new Error(`Server returned invalid response: ${responseText.substring(0, 100)}`);
+        throw new Error("Server returned invalid response");
       }
 
       if (!res.ok || !data?.orderId || !data?.razorpayOrderId) {
         throw new Error(data?.error || "Order creation failed");
       }
-
-      console.log("Order created:", data.orderId);
-      console.log("Razorpay Order ID:", data.razorpayOrderId);
 
       // Step 2: Open Razorpay Checkout
       const options = {

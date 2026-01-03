@@ -102,6 +102,15 @@ export async function POST(req: Request) {
       }
     }
 
+    // ✅ CREATE RAZORPAY ORDER
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalAmount * 100, // Amount in paise (multiply by 100)
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
+
+    console.log("✅ RAZORPAY ORDER CREATED:", razorpayOrder.id);
+
     // ✅ CREATE ORDER IN TRANSACTION
     const order = await prisma.$transaction(async (tx) => {
       // Create the order
@@ -126,6 +135,18 @@ export async function POST(req: Request) {
         },
       });
 
+      // Create Payment record with Razorpay order ID
+      await tx.payment.create({
+        data: {
+          orderId: newOrder.id,
+          amount: totalAmount,
+          currency: "INR",
+          status: "PENDING",
+          provider: "RAZORPAY",
+          razorpayOrderId: razorpayOrder.id,
+        },
+      });
+
       // Optional: Update stock (uncomment if needed)
       // for (const item of items) {
       //   await tx.product.update({
@@ -143,9 +164,14 @@ export async function POST(req: Request) {
 
     console.log("✅ ORDER CREATED:", order.id);
 
-    // ✅ RETURN ORDER ID
+    // ✅ RETURN ORDER ID + RAZORPAY ORDER ID
     return NextResponse.json(
-      { orderId: order.id },
+      { 
+        orderId: order.id,
+        razorpayOrderId: razorpayOrder.id,
+        amount: totalAmount,
+        currency: "INR",
+      },
       { status: 201, headers: corsHeaders }
     );
   } catch (err) {

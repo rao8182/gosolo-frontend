@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
     console.log("✅ SIGNATURE VERIFIED");
 
-    // ✅ UPDATE PAYMENT AND ORDER STATUS IN TRANSACTION
+    // ✅ UPDATE PAYMENT, ORDER STATUS, AND REDUCE STOCK IN TRANSACTION
     await prisma.$transaction(async (tx) => {
       // Update Payment record
       await tx.payment.updateMany({
@@ -69,9 +69,29 @@ export async function POST(req: Request) {
         where: { id: orderId },
         data: { status: "PAID" },
       });
+
+      // Reduce product stock
+      const orderItems = await tx.orderItem.findMany({
+        where: { orderId },
+        select: {
+          productId: true,
+          quantity: true,
+        },
+      });
+
+      for (const item of orderItems) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+      }
     });
 
-    console.log("✅ PAYMENT VERIFIED & ORDER UPDATED:", orderId);
+    console.log("✅ PAYMENT VERIFIED, ORDER UPDATED & STOCK REDUCED:", orderId);
 
     return NextResponse.json(
       { success: true, orderId },

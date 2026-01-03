@@ -42,7 +42,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ VALIDATION 2: Check totalAmount is valid
+    // ✅ VALIDATION 2: Validate each item has required fields and positive quantity
+    for (const item of items) {
+      if (!item.id || !item.quantity || item.quantity <= 0) {
+        return NextResponse.json(
+          { error: "Invalid item: missing id or invalid quantity" },
+          { status: 400, headers: corsHeaders }
+        );
+      }
+    }
+
+    // ✅ VALIDATION 3: Check totalAmount is valid
     if (!totalAmount || totalAmount <= 0) {
       return NextResponse.json(
         { error: "Invalid total amount" },

@@ -70,8 +70,6 @@ export default function CheckoutPage() {
         description: "Gummies Purchase",
         order_id: data.razorpayOrderId,
         handler: async function (response: any) {
-          console.log("Payment successful:", response);
-
           // Step 3: Verify payment on backend
           try {
             const verifyRes = await fetch("/api/payments/verify", {

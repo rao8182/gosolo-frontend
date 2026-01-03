@@ -139,13 +139,13 @@ export async function POST(req: Request) {
     // ✅ RETURN ORDER ID
     return NextResponse.json(
       { orderId: order.id },
-      { status: 201 }
+      { status: 201, headers: corsHeaders }
     );
   } catch (err) {
     console.error("❌ ORDER API ERROR:", err);
     return NextResponse.json(
       { error: "Failed to create order. Please try again." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

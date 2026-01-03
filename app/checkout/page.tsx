@@ -90,8 +90,6 @@ export default function CheckoutPage() {
             const verifyData = await verifyRes.json();
 
             if (verifyRes.ok && verifyData.success) {
-              console.log("Payment verified successfully");
-              
               // Clear cart
               clearCart();
 
@@ -101,7 +99,6 @@ export default function CheckoutPage() {
               throw new Error("Payment verification failed");
             }
           } catch (verifyError) {
-            console.error("Verification error:", verifyError);
             router.push("/order-failure");
           }
         },
@@ -115,7 +112,6 @@ export default function CheckoutPage() {
         },
         modal: {
           ondismiss: function () {
-            console.log("Payment cancelled by user");
             setLoading(false);
             router.push("/order-failure");
           },

@@ -30,8 +30,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    console.log("ORDER BODY RECEIVED:", body);
-
     const { items, totalAmount } = body;
 
     // ✅ VALIDATION 1: Check cart is not empty

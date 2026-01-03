@@ -87,8 +87,6 @@ export async function POST(req: Request) {
       }
     });
 
-    console.log("✅ PAYMENT VERIFIED, ORDER UPDATED & STOCK REDUCED:", orderId);
-
     return NextResponse.json(
       { success: true, orderId },
       { status: 200, headers: corsHeaders }

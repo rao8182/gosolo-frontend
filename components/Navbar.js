@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useCartStore } from "@/store/cartStore";
+import { useState } from "react";
 
 export default function Navbar() {
+  const items = useCartStore((state) => state.items);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
-    <nav className="fixed top-0 w-full z-50 pt-6 px-4">
+    <nav className="fixed top-0 w-full z-50 pt-6 px-4 bg-black/80 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Logo / Home */}
@@ -24,7 +31,7 @@ export default function Navbar() {
               
               <Link
                 href="/"
-                className="text-primary hover:text-primary transition-colors"
+                className="hover:text-primary transition-colors text-gray-300"
               >
                 Home
               </Link>
@@ -32,6 +39,7 @@ export default function Navbar() {
               <Link
                 href="/shop"
                 className="hover:text-primary transition-colors text-gray-300"
+                data-testid="nav-shop-link"
               >
                 Shop
               </Link>
@@ -62,24 +70,90 @@ export default function Navbar() {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full hover:bg-white/10 transition-colors text-white">
-            <span className="material-icons-round text-xl">person</span>
+        <div className="flex items-center gap-2">
+          
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+          >
+            <span className="material-icons-round text-xl">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
           </button>
 
-          <button className="p-2 rounded-full hover:bg-white/10 transition-colors text-white">
-            <span className="material-icons-round text-xl">search</span>
-          </button>
+          {/* Cart Button - Visible on all screens */}
+          <Link 
+            href="/cart"
+            className="relative p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+            data-testid="nav-cart-button"
+          >
+            <span className="material-icons-round text-xl">shopping_cart</span>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
 
-          <button className="hidden sm:flex items-center gap-2 border border-white/20 px-4 py-2 rounded-full hover:border-primary transition-colors group text-white">
-            <span className="text-sm font-medium">Sign in</span>
+          {/* Desktop Shop Button */}
+          <Link
+            href="/shop"
+            className="hidden md:flex items-center gap-2 border border-primary/50 bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors group text-white"
+            data-testid="nav-shop-button"
+          >
+            <span className="text-sm font-medium">Shop Now</span>
             <span className="material-icons-round text-sm text-primary group-hover:translate-x-1 transition-transform">
               arrow_forward
             </span>
-          </button>
+          </Link>
         </div>
 
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden mt-4 pb-4">
+          <div className="bg-[#1E1E1E] rounded-2xl p-4 space-y-2">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+            >
+              Home
+            </Link>
+            <Link
+              href="/shop"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+              data-testid="mobile-shop-link"
+            >
+              Shop
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+            >
+              About
+            </Link>
+            <Link
+              href="/blog"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+            >
+              Contact
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

@@ -95,10 +95,9 @@ export async function POST(req: Request) {
         );
       }
 
-      // Check if price matches (allowing for both price and price in rupees)
+      // Price validation - use DB price for security
       if (dbProduct.price !== item.price) {
-        console.warn(`Price mismatch for ${item.id}: DB=${dbProduct.price}, Cart=${item.price}`);
-        // Use DB price instead of cart price for security
+        // Silently use DB price to prevent price manipulation
       }
 
       // Check stock availability
@@ -113,6 +112,9 @@ export async function POST(req: Request) {
     // ✅ CREATE RAZORPAY ORDER
     const razorpayOrder = await razorpay.orders.create({
       amount: totalAmount * 100, // Amount in paise (multiply by 100)
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });

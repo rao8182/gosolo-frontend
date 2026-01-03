@@ -51,7 +51,6 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
 
                 <button
                   onClick={() => {
-                    console.log("Adding to cart:", product.name);
                     addItem({
                       id: product.id,
                       name: product.name,

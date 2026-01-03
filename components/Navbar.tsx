@@ -99,7 +99,7 @@ export default function Navbar() {
           {/* Desktop Shop Button */}
           <Link
             href="/shop"
-            className="hidden md:flex items-center gap-2 border border-primary/50 bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors group text-white"
+            className="hidden md:flex items-center gap-2 border border-primary/50 bg-primary/10 px-4 py-2 rounded-full hover:bg-primary/20 transition-colors group text-white cursor-pointer"
             data-testid="nav-shop-button"
           >
             <span className="text-sm font-medium">Shop Now</span>

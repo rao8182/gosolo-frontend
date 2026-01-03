@@ -1,8 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+// Add CORS headers for preview environment
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function GET() {
-  return NextResponse.json({ message: "Orders API is working. Use POST to create an order." });
+  return NextResponse.json(
+    { message: "Orders API is working. Use POST to create an order." },
+    { headers: corsHeaders }
+  );
 }
 
 export async function POST(req: Request) {

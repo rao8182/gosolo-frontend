@@ -31,6 +31,8 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
           rel="stylesheet"
         />
+        {/* Razorpay Script */}
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

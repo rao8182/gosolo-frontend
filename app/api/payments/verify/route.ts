@@ -92,7 +92,6 @@ export async function POST(req: Request) {
       { status: 200, headers: corsHeaders }
     );
   } catch (err) {
-    console.error("❌ PAYMENT VERIFICATION ERROR:", err);
     return NextResponse.json(
       { error: "Payment verification failed" },
       { status: 500, headers: corsHeaders }

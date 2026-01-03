@@ -115,11 +115,6 @@ export async function POST(req: Request) {
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-    });
-
-    console.log("✅ RAZORPAY ORDER CREATED:", razorpayOrder.id);
 
     // ✅ CREATE ORDER IN TRANSACTION
     const order = await prisma.$transaction(async (tx) => {

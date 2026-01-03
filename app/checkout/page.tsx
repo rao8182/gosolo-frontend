@@ -29,6 +29,10 @@ export default function CheckoutPage() {
     try {
       setLoading(true);
   
+      console.log("Sending order request...");
+      console.log("Items:", items);
+      console.log("Total:", total);
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -40,19 +44,25 @@ export default function CheckoutPage() {
         }),
       });
   
+      console.log("Response received:");
+      console.log("Status:", res.status);
+      console.log("Status Text:", res.statusText);
+      console.log("Headers:", Object.fromEntries(res.headers.entries()));
+
       // Get response text first to see what we're getting
       const responseText = await res.text();
-      console.log("Response status:", res.status);
       console.log("Response text:", responseText);
 
       // Try to parse as JSON
       let data;
       try {
         data = JSON.parse(responseText);
+        console.log("Parsed data:", data);
       } catch (parseError) {
-        console.error("Failed to parse response as JSON:", parseError);
-        console.error("Response was:", responseText);
-        throw new Error("Server returned invalid response. Please check the console.");
+        console.error("Failed to parse response as JSON");
+        console.error("Parse error:", parseError);
+        console.error("Raw response was:", responseText);
+        throw new Error(`Server returned invalid response: ${responseText.substring(0, 100)}`);
       }
   
       // ❌ API failed OR orderId missing → stop
@@ -60,6 +70,8 @@ export default function CheckoutPage() {
         throw new Error(data?.error || "Order creation failed");
       }
   
+      console.log("Order created successfully with ID:", data.orderId);
+
       // ✅ Order safely created → clear cart
       clearCart();
   

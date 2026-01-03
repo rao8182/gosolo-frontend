@@ -119,8 +119,7 @@ export default function CheckoutPage() {
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error: any) {
-      console.error("PLACE ORDER ERROR:", error);
-      alert(`Failed to place order: ${error.message}`);
+      alert(`Failed to place order: ${error.message || "Please try again"}`);
       setLoading(false);
     }
   };

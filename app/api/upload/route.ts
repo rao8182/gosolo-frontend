@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
+import { v2 as cloudinary } from "cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
 };
 
 export async function OPTIONS() {
@@ -15,6 +20,14 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   try {
+    // Check Cloudinary configuration
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json(
+        { success: false, error: "Cloudinary not configured" },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -35,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
         { success: false, error: "File too large. Maximum size is 5MB" },
@@ -43,30 +56,28 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    const extension = file.name.split(".").pop() || "png";
-    const filename = `product_${timestamp}_${randomStr}.${extension}`;
-
-    // Convert file to buffer and save
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
-    const filePath = path.join(uploadDir, filename);
-    await writeFile(filePath, buffer);
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-    // Return the public URL
-    const imageUrl = `/uploads/${filename}`;
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: "gosolo-products",
+      resource_type: "image",
+      transformation: [
+        { width: 800, height: 800, crop: "limit" },
+        { quality: "auto" },
+        { fetch_format: "auto" },
+      ],
+    });
 
     return NextResponse.json(
-      { success: true, imageUrl, filename },
+      {
+        success: true,
+        imageUrl: result.secure_url,
+        publicId: result.public_id,
+      },
       { status: 201, headers: corsHeaders }
     );
   } catch (error) {

@@ -46,3 +46,11 @@ prisma/dev.db-journal
 *.swp
 *.swo
 *~
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*

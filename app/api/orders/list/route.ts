@@ -14,6 +14,7 @@ export async function OPTIONS() {
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
+      take: 100, // Limit to 100 orders
       orderBy: {
         createdAt: 'desc',
       },

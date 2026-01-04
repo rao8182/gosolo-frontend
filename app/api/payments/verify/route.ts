@@ -66,7 +66,7 @@ export async function POST(req: Request) {
         data: { status: "PAID" },
       });
 
-      // Reduce product stock
+      // Reduce product stock - OPTIMIZED: Batch updates using Promise.all
       const orderItems = await tx.orderItem.findMany({
         where: { orderId },
         select: {
@@ -75,16 +75,19 @@ export async function POST(req: Request) {
         },
       });
 
-      for (const item of orderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity,
+      // Batch all stock updates in parallel to avoid N+1 queries
+      await Promise.all(
+        orderItems.map((item) =>
+          tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
             },
-          },
-        });
-      }
+          })
+        )
+      );
     });
 
     return NextResponse.json(

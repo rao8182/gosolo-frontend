@@ -54,11 +54,15 @@ export default function CheckoutPage() {
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
-        throw new Error("Server returned invalid response");
+        console.error("Failed to parse API response:", responseText);
+        throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
       if (!res.ok || !data?.orderId || !data?.razorpayOrderId) {
-        throw new Error(data?.error || "Order creation failed");
+        const errorMsg = data?.error || "Order creation failed";
+        const errorDetails = data?.details || "";
+        console.error("Order creation failed:", { errorMsg, errorDetails, fullResponse: data });
+        throw new Error(`${errorMsg}${errorDetails ? ': ' + errorDetails : ''}`);
       }
 
       // Step 2: Open Razorpay Checkout

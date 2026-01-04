@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import ShopClient from "./ShopClient.tsx";
+import ShopClient from "./ShopClient";
 
 export default async function ShopPage() {
   // Fetch products on the server

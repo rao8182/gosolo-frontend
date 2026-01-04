@@ -47,6 +47,7 @@ Build a full-stack e-commerce web application called "GoSolo" with:
   - Stats cards (Total, Active, Out of Stock, On Discount)
   - Quick stock +/- buttons for instant updates
   - Add/Edit product modal with form validation
+  - **Image upload** (JPEG, PNG, WebP, GIF, max 5MB)
   - Delete product (soft delete for products with orders)
 - [x] Discount System
   - Admin sets discount percentage (0-100%)

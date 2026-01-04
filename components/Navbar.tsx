@@ -85,10 +85,16 @@ export default function Navbar() {
           {/* Cart Button - Visible on all screens */}
           <Link 
             href="/cart"
-            className="relative p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+            className="relative p-2 rounded-full hover:bg-white/10 transition-colors text-white flex items-center justify-center"
             data-testid="nav-cart-button"
+            title="View Cart"
           >
-            <span className="material-icons-round text-xl">shopping_cart</span>
+            {/* Material Icons with fallback */}
+            <span className="material-icons-round text-xl" style={{ fontFamily: "'Material Icons Round', sans-serif" }}>
+              shopping_cart
+            </span>
+            {/* Text fallback if icon doesn't load */}
+            <span className="sr-only">Cart</span>
             {cartItemCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-primary text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 {cartItemCount}

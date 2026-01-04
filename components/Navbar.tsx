@@ -65,6 +65,14 @@ export default function Navbar() {
                 Contact
               </Link>
 
+              <Link
+                href="/orders"
+                className="hover:text-primary transition-colors text-gray-300"
+                data-testid="nav-orders-link"
+              >
+                My Orders
+              </Link>
+
             </div>
           </div>
         </div>
@@ -156,6 +164,14 @@ export default function Navbar() {
               className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
             >
               Contact
+            </Link>
+            <Link
+              href="/orders"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+              data-testid="mobile-orders-link"
+            >
+              My Orders
             </Link>
           </div>
         </div>

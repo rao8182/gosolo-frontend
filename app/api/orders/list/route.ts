@@ -14,7 +14,7 @@ export async function OPTIONS() {
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
-      take: 100, // Limit to 100 orders
+      take: 100,
       orderBy: {
         createdAt: 'desc',
       },
@@ -24,17 +24,22 @@ export async function GET() {
             status: true,
           },
         },
+        _count: {
+          select: {
+            items: true,
+          },
+        },
       },
     });
 
     return NextResponse.json(
-      { orders },
+      { success: true, orders },
       { headers: corsHeaders }
     );
   } catch (error) {
-    console.error("Failed to fetch orders:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch orders" },
+      { success: false, error: "Failed to fetch orders", details: errorMessage },
       { status: 500, headers: corsHeaders }
     );
   }

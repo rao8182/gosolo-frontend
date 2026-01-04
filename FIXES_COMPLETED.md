@@ -185,7 +185,7 @@ Response: {"error": "Insufficient stock for Energy Boost Gummies. Available: 100
 
 ### Test 6: Order Success Page ✅
 ```
-GET /order-success?orderId=0bf3c66b-b734-42fa-b7ad-47035da874d1
+GET /order-success?orderId=shoponline-17
 Result: Page displays "Order ID: 0bf3c66b-b734-42fa-b7ad-47035da874d1"
 ```
 

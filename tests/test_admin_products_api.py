@@ -365,13 +365,13 @@ class TestShopPageProducts:
         assert response.status_code == 200
         
         data = response.json()
-        products = data.get("products", data)  # Handle different response formats
+        # Handle both list and object response formats
+        products = data if isinstance(data, list) else data.get("products", [])
         
-        if isinstance(products, list):
-            for product in products:
-                assert product.get("isActive", True) is True
-                assert product.get("stock", 1) > 0
-            print(f"✓ Shop page shows {len(products)} active products with stock")
+        for product in products:
+            assert product.get("isActive", True) is True
+            assert product.get("stock", 1) > 0
+        print(f"✓ Shop page shows {len(products)} active products with stock")
     
     def test_shop_products_include_discount_info(self):
         """GET /api/products - Products include discountPercent field"""
@@ -379,9 +379,10 @@ class TestShopPageProducts:
         assert response.status_code == 200
         
         data = response.json()
-        products = data.get("products", data)
+        # Handle both list and object response formats
+        products = data if isinstance(data, list) else data.get("products", [])
         
-        if isinstance(products, list) and len(products) > 0:
+        if len(products) > 0:
             product = products[0]
             assert "discountPercent" in product
             print(f"✓ Shop products include discount info")

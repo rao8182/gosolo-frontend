@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 
 type Product = {
@@ -49,6 +49,11 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductForm>(initialFormState);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Image upload states
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -74,6 +79,7 @@ export default function AdminProductsPage() {
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData(initialFormState);
+    setImagePreview(null);
     setShowModal(true);
   };
 
@@ -88,6 +94,7 @@ export default function AdminProductsPage() {
       discountPercent: product.discountPercent.toString(),
       isActive: product.isActive,
     });
+    setImagePreview(product.imageUrl);
     setShowModal(true);
   };
 
@@ -95,10 +102,62 @@ export default function AdminProductsPage() {
     setShowModal(false);
     setEditingProduct(null);
     setFormData(initialFormState);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setFormData((prev) => ({ ...prev, imageUrl: data.imageUrl }));
+        setSuccessMessage("Image uploaded successfully");
+        setTimeout(() => setSuccessMessage(null), 2000);
+      } else {
+        setError(data.error || "Failed to upload image");
+        setImagePreview(editingProduct?.imageUrl || null);
+      }
+    } catch {
+      setError("Network error. Failed to upload image.");
+      setImagePreview(editingProduct?.imageUrl || null);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.imageUrl) {
+      setError("Please upload a product image");
+      return;
+    }
+    
     setSubmitting(true);
     setError(null);
 
@@ -398,6 +457,75 @@ export default function AdminProductsPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">Product Image *</label>
+                  <div className="space-y-3">
+                    {/* Preview Area */}
+                    <div 
+                      className={`relative w-full h-40 rounded-lg border-2 border-dashed ${
+                        imagePreview ? 'border-primary/50 bg-white/5' : 'border-white/20 bg-white/5'
+                      } flex items-center justify-center overflow-hidden`}
+                    >
+                      {imagePreview ? (
+                        <>
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="max-w-full max-h-full object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setFormData({ ...formData, imageUrl: "" });
+                              if (fileInputRef.current) fileInputRef.current.value = "";
+                            }}
+                            className="absolute top-2 right-2 p-1 rounded-full bg-red-500/80 hover:bg-red-500 text-white"
+                          >
+                            <span className="material-icons-round text-sm">close</span>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center">
+                          <span className="material-icons-round text-4xl text-gray-500 mb-2 block">cloud_upload</span>
+                          <p className="text-sm text-gray-500">Click or drag to upload</p>
+                          <p className="text-xs text-gray-600 mt-1">JPEG, PNG, WebP, GIF (max 5MB)</p>
+                        </div>
+                      )}
+                      
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                            <p className="text-sm text-gray-300">Uploading...</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* File Input */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="product-image-upload"
+                      data-testid="product-image-upload"
+                    />
+                    <label
+                      htmlFor="product-image-upload"
+                      className={`block w-full py-2 px-4 rounded-lg border border-white/20 text-center cursor-pointer hover:bg-white/10 transition-colors ${
+                        uploading ? 'opacity-50 pointer-events-none' : ''
+                      }`}
+                    >
+                      <span className="material-icons-round text-sm mr-2 align-middle">upload</span>
+                      {imagePreview ? 'Change Image' : 'Upload Image'}
+                    </label>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Product Name *</label>
                   <input
@@ -449,28 +577,6 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Image URL *</label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary focus:outline-none"
-                    required
-                    data-testid="product-image-input"
-                  />
-                  {formData.imageUrl && (
-                    <div className="mt-2 p-2 rounded bg-white/5">
-                      <img
-                        src={formData.imageUrl}
-                        alt="Preview"
-                        className="w-20 h-20 object-contain mx-auto"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
                   <label className="block text-sm text-gray-400 mb-1">Discount (%)</label>
                   <input
                     type="number"
@@ -510,8 +616,8 @@ export default function AdminProductsPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting}
-                    className="flex-1 py-2 rounded-lg bg-primary text-black font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50"
+                    disabled={submitting || uploading || !formData.imageUrl}
+                    className="flex-1 py-2 rounded-lg bg-primary text-black font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="save-product-btn"
                   >
                     {submitting ? "Saving..." : (editingProduct ? "Update Product" : "Add Product")}

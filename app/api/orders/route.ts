@@ -179,8 +179,10 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     console.error("❌ ORDER API ERROR:", err);
+    // Return detailed error for debugging
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create order. Please try again." },
+      { error: "Failed to create order. Please try again.", details: errorMessage },
       { status: 500, headers: corsHeaders }
     );
   }

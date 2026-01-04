@@ -63,7 +63,7 @@ export default function CheckoutPage() {
 
       // Step 2: Open Razorpay Checkout
       const options = {
-        key: "rzp_test_RzWT68NDWaooal", // Razorpay Key ID
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Razorpay Key ID from env
         amount: data.amount * 100, // Amount in paise
         currency: data.currency,
         name: "GoSolo",

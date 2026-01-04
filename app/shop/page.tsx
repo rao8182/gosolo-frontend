@@ -4,6 +4,7 @@ import ShopClient from "./ShopClient.tsx";
 export default async function ShopPage() {
   // Fetch products on the server
   const products = await prisma.product.findMany({
+    take: 100, // Limit to 100 products
     orderBy: {
       createdAt: 'desc'
     }

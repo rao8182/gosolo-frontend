@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+type OrderItem = {
+  id: string;
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+  };
+};
+
 type Order = {
   id: string;
   status: string;
@@ -10,16 +19,30 @@ type Order = {
   createdAt: string;
   payment?: {
     status: string;
+    razorpayPaymentId?: string;
   };
+  items?: OrderItem[];
   _count?: {
     items: number;
   };
+};
+
+// Valid status transitions
+const validTransitions: Record<string, string[]> = {
+  PENDING: ["PAID", "CANCELLED"],
+  PAID: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED"],
+  DELIVERED: [],
+  CANCELLED: [],
 };
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -27,13 +50,16 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async () => {
     try {
+      setError(null);
       const res = await fetch("/api/admin/orders");
       if (res.ok) {
         const data = await res.json();
-        setOrders(data.orders);
+        setOrders(data.orders || []);
+      } else {
+        setError("Failed to load orders");
       }
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
+    } catch {
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -41,6 +67,9 @@ export default function AdminOrdersPage() {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     setUpdating(orderId);
+    setError(null);
+    setSuccessMessage(null);
+
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
@@ -50,16 +79,17 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ status: newStatus }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        // Refresh orders
+        setSuccessMessage(`Order status updated to ${newStatus}`);
         fetchOrders();
-        alert("Order status updated successfully");
+        setTimeout(() => setSuccessMessage(null), 3000);
       } else {
-        alert("Failed to update order status");
+        setError(data.error || "Failed to update order status");
       }
-    } catch (error) {
-      console.error("Failed to update order:", error);
-      alert("Failed to update order status");
+    } catch {
+      setError("Network error. Please try again.");
     } finally {
       setUpdating(null);
     }
@@ -68,113 +98,233 @@ export default function AdminOrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PAID":
-        return "bg-green-500/20 text-green-500";
+      case "SUCCESS":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
       case "PENDING":
-        return "bg-yellow-500/20 text-yellow-500";
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
       case "SHIPPED":
-        return "bg-blue-500/20 text-blue-500";
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
       case "DELIVERED":
-        return "bg-purple-500/20 text-purple-500";
+        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
       case "CANCELLED":
-        return "bg-red-500/20 text-red-500";
+      case "FAILED":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
       default:
-        return "bg-gray-500/20 text-gray-500";
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
   };
 
+  const getAvailableStatuses = (currentStatus: string) => {
+    return validTransitions[currentStatus] || [];
+  };
+
+  const filteredOrders = statusFilter === "ALL" 
+    ? orders 
+    : orders.filter(order => order.status === statusFilter);
+
+  // Count orders by status
+  const statusCounts = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
-    <main className="min-h-screen pt-32 px-6 bg-black text-white">
+    <main className="min-h-screen pt-32 px-6 bg-black text-white" data-testid="admin-orders-page">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Admin - Order Management</h1>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold" data-testid="admin-title">Order Management</h1>
+            <p className="text-gray-500 mt-1">Manage and track all customer orders</p>
+          </div>
           <Link
             href="/"
-            className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors w-fit"
+            data-testid="back-to-home-btn"
           >
+            <span className="material-icons-round text-sm">arrow_back</span>
             Back to Home
           </Link>
         </div>
 
+        {/* Messages */}
+        {successMessage && (
+          <div className="mb-6 p-4 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 flex items-center gap-2" data-testid="success-message">
+            <span className="material-icons-round">check_circle</span>
+            {successMessage}
+          </div>
+        )}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 flex items-center gap-2" data-testid="error-message">
+            <span className="material-icons-round">error</span>
+            {error}
+            <button onClick={() => setError(null)} className="ml-auto hover:text-white">
+              <span className="material-icons-round text-sm">close</span>
+            </button>
+          </div>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" data-testid="status-stats">
+          <button
+            onClick={() => setStatusFilter("ALL")}
+            className={`p-4 rounded-xl border transition-all ${
+              statusFilter === "ALL" 
+                ? "bg-primary/20 border-primary" 
+                : "bg-white/5 border-white/10 hover:border-white/30"
+            }`}
+          >
+            <p className="text-2xl font-bold">{orders.length}</p>
+            <p className="text-sm text-gray-400">All Orders</p>
+          </button>
+          {["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`p-4 rounded-xl border transition-all ${
+                statusFilter === status 
+                  ? "bg-primary/20 border-primary" 
+                  : "bg-white/5 border-white/10 hover:border-white/30"
+              }`}
+            >
+              <p className="text-2xl font-bold">{statusCounts[status] || 0}</p>
+              <p className="text-sm text-gray-400">{status}</p>
+            </button>
+          ))}
+        </div>
+
         {loading ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12" data-testid="admin-loading">
+            <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-gray-400">Loading orders...</p>
           </div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400">No orders yet.</p>
+        ) : filteredOrders.length === 0 ? (
+          <div className="text-center py-12" data-testid="admin-empty">
+            <span className="material-icons-round text-6xl text-gray-600 mb-4 block">inbox</span>
+            <p className="text-gray-400">
+              {statusFilter === "ALL" ? "No orders yet" : `No ${statusFilter} orders`}
+            </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-white/10" data-testid="orders-table">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-4 px-4">Order ID</th>
-                  <th className="text-left py-4 px-4">Items</th>
-                  <th className="text-left py-4 px-4">Amount</th>
-                  <th className="text-left py-4 px-4">Payment</th>
-                  <th className="text-left py-4 px-4">Status</th>
-                  <th className="text-left py-4 px-4">Date</th>
-                  <th className="text-left py-4 px-4">Actions</th>
+                <tr className="bg-white/5 border-b border-white/10">
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Order ID</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Items</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Amount</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Payment</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Status</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Date</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-gray-400">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-white/5 hover:bg-white/5"
-                  >
-                    <td className="py-4 px-4">
-                      <Link
-                        href={`/orders/${order.id}`}
-                        className="font-mono text-sm hover:text-primary"
-                      >
-                        {order.id.substring(0, 8)}...
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4">{order._count?.items || 0}</td>
-                    <td className="py-4 px-4 font-semibold">₹{order.totalAmount}</td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          order.payment?.status || "PENDING"
-                        )}`}
-                      >
-                        {order.payment?.status || "PENDING"}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-400">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-4">
-                      <select
-                        value={order.status}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        disabled={updating === order.id}
-                        className="bg-white/10 border border-white/20 rounded px-3 py-1 text-sm focus:outline-none focus:border-primary disabled:opacity-50"
-                        data-testid={`order-status-${order.id}`}
-                      >
-                        <option value="PENDING">PENDING</option>
-                        <option value="PAID">PAID</option>
-                        <option value="SHIPPED">SHIPPED</option>
-                        <option value="DELIVERED">DELIVERED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
+                {filteredOrders.map((order) => {
+                  const availableStatuses = getAvailableStatuses(order.status);
+                  const canUpdate = availableStatuses.length > 0;
+
+                  return (
+                    <tr
+                      key={order.id}
+                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      data-testid={`admin-order-row-${order.id}`}
+                    >
+                      <td className="py-4 px-4">
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="font-mono text-sm hover:text-primary transition-colors"
+                          data-testid={`order-link-${order.id}`}
+                        >
+                          #{order.id.substring(0, 8)}...
+                        </Link>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm">{order._count?.items || 0} items</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="font-semibold">₹{order.totalAmount.toLocaleString()}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                            order.payment?.status || "PENDING"
+                          )}`}
+                          data-testid={`payment-status-${order.id}`}
+                        >
+                          {order.payment?.status || "PENDING"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                            order.status
+                          )}`}
+                          data-testid={`order-status-${order.id}`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-400">
+                        {new Date(order.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="py-4 px-4">
+                        {canUpdate ? (
+                          <select
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                updateOrderStatus(order.id, e.target.value);
+                              }
+                            }}
+                            disabled={updating === order.id}
+                            className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary disabled:opacity-50 cursor-pointer min-w-[140px]"
+                            data-testid={`status-select-${order.id}`}
+                          >
+                            <option value="">Update Status</option>
+                            {availableStatuses.map((status) => (
+                              <option key={status} value={status}>
+                                → {status}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-500 italic">
+                            {order.status === "DELIVERED" ? "Completed" : "No actions"}
+                          </span>
+                        )}
+                        {updating === order.id && (
+                          <span className="ml-2 inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* Legend */}
+        <div className="mt-8 p-4 rounded-xl bg-white/5 border border-white/10" data-testid="status-legend">
+          <h3 className="font-semibold mb-3">Status Flow</h3>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">PENDING</span>
+            <span className="text-gray-500">→</span>
+            <span className="px-2 py-1 rounded bg-green-500/20 text-green-400">PAID</span>
+            <span className="text-gray-500">→</span>
+            <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400">SHIPPED</span>
+            <span className="text-gray-500">→</span>
+            <span className="px-2 py-1 rounded bg-purple-500/20 text-purple-400">DELIVERED</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            * Orders can be cancelled from PENDING, PAID, or SHIPPED status
+          </p>
+        </div>
       </div>
     </main>
   );

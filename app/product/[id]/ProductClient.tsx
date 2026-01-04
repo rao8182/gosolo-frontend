@@ -9,6 +9,7 @@ type Product = {
   name: string;
   description: string;
   price: number;
+  discountPercent: number;
   imageUrl: string;
   stock: number;
   createdAt: string;
@@ -23,11 +24,20 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
   const addItem = useCartStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
 
+  const getDiscountedPrice = (price: number, discountPercent: number) => {
+    return Math.round(price * (1 - discountPercent / 100));
+  };
+
+  const hasDiscount = product.discountPercent > 0;
+  const finalPrice = hasDiscount 
+    ? getDiscountedPrice(product.price, product.discountPercent)
+    : product.price;
+
   const handleAddToCart = () => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: finalPrice,
       imageUrl: product.imageUrl,
       quantity: quantity,
     });
@@ -55,7 +65,15 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Product Image */}
-          <div className="flex items-center justify-center p-8 rounded-2xl bg-white/5 border border-white/10">
+          <div className="relative flex items-center justify-center p-8 rounded-2xl bg-white/5 border border-white/10">
+            {/* Discount Badge */}
+            {hasDiscount && (
+              <div className="absolute top-4 right-4 z-10">
+                <span className="px-4 py-2 rounded-full bg-green-500 text-black text-lg font-bold">
+                  {product.discountPercent}% OFF
+                </span>
+              </div>
+            )}
             <img
               src={product.imageUrl}
               alt={product.name}
@@ -76,10 +94,25 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
 
             {/* Price */}
             <div className="py-4 border-y border-white/10">
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-primary">₹{product.price}</span>
-                <span className="text-gray-400">per bottle</span>
-              </div>
+              {hasDiscount ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl text-gray-500 line-through">₹{product.price}</span>
+                    <span className="text-4xl font-bold text-primary">₹{finalPrice}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">
+                      Save ₹{product.price - finalPrice}
+                    </span>
+                    <span className="text-gray-400 text-sm">per bottle</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl font-bold text-primary">₹{product.price}</span>
+                  <span className="text-gray-400">per bottle</span>
+                </div>
+              )}
             </div>
 
             {/* Stock Status */}
@@ -168,23 +201,44 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           <div className="pt-16 border-t border-white/10">
             <h2 className="text-3xl font-bold mb-8">You May Also Like</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedProducts.map((relatedProduct) => (
-                <Link
-                  key={relatedProduct.id}
-                  href={`/product/${relatedProduct.id}`}
-                  className="p-6 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group"
-                >
-                  {relatedProduct.imageUrl && (
-                    <img
-                      src={relatedProduct.imageUrl}
-                      alt={relatedProduct.name}
-                      className="w-full h-48 object-contain mb-4 group-hover:scale-105 transition-transform"
-                    />
-                  )}
-                  <h3 className="text-lg font-semibold mb-2">{relatedProduct.name}</h3>
-                  <p className="text-primary font-bold text-xl">₹{relatedProduct.price}</p>
-                </Link>
-              ))}
+              {relatedProducts.map((relatedProduct) => {
+                const relatedHasDiscount = relatedProduct.discountPercent > 0;
+                const relatedFinalPrice = relatedHasDiscount
+                  ? getDiscountedPrice(relatedProduct.price, relatedProduct.discountPercent)
+                  : relatedProduct.price;
+
+                return (
+                  <Link
+                    key={relatedProduct.id}
+                    href={`/product/${relatedProduct.id}`}
+                    className="relative p-6 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group"
+                  >
+                    {relatedHasDiscount && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <span className="px-2 py-1 rounded-full bg-green-500 text-black text-xs font-bold">
+                          {relatedProduct.discountPercent}% OFF
+                        </span>
+                      </div>
+                    )}
+                    {relatedProduct.imageUrl && (
+                      <img
+                        src={relatedProduct.imageUrl}
+                        alt={relatedProduct.name}
+                        className="w-full h-48 object-contain mb-4 group-hover:scale-105 transition-transform"
+                      />
+                    )}
+                    <h3 className="text-lg font-semibold mb-2">{relatedProduct.name}</h3>
+                    {relatedHasDiscount ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 line-through">₹{relatedProduct.price}</span>
+                        <span className="text-primary font-bold text-xl">₹{relatedFinalPrice}</span>
+                      </div>
+                    ) : (
+                      <p className="text-primary font-bold text-xl">₹{relatedProduct.price}</p>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}

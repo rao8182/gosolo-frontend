@@ -16,14 +16,17 @@ model User {
 }
 
 model Product {
-  id          String      @id @default(uuid())
-  name        String
-  description String
-  price       Int
-  stock       Int
-  imageUrl    String
-  createdAt   DateTime    @default(now())
-  orderItems  OrderItem[]
+  id              String      @id @default(uuid())
+  name            String
+  description     String
+  price           Int
+  discountPercent Int         @default(0)
+  stock           Int
+  imageUrl        String
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
 }
 
 model Order {

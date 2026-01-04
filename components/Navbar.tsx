@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function Navbar() {
   const items = useCartStore((state) => state.items);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -52,26 +53,45 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/blog"
-                className="hover:text-primary transition-colors text-gray-300"
-              >
-                Blog
-              </Link>
-
-              <Link
-                href="/contact"
-                className="hover:text-primary transition-colors text-gray-300"
-              >
-                Contact
-              </Link>
-
-              <Link
                 href="/orders"
                 className="hover:text-primary transition-colors text-gray-300"
                 data-testid="nav-orders-link"
               >
                 My Orders
               </Link>
+
+              {/* Admin Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                  onBlur={() => setTimeout(() => setAdminMenuOpen(false), 150)}
+                  className="hover:text-primary transition-colors text-gray-300 flex items-center gap-1"
+                  data-testid="nav-admin-btn"
+                >
+                  Admin
+                  <span className="material-icons-round text-sm">
+                    {adminMenuOpen ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                {adminMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 py-2 w-40 rounded-lg bg-[#1E1E1E] border border-white/10 shadow-xl">
+                    <Link
+                      href="/admin/orders"
+                      className="block px-4 py-2 hover:bg-white/10 transition-colors text-gray-300"
+                      data-testid="nav-admin-orders"
+                    >
+                      Orders
+                    </Link>
+                    <Link
+                      href="/admin/products"
+                      className="block px-4 py-2 hover:bg-white/10 transition-colors text-gray-300"
+                      data-testid="nav-admin-products"
+                    >
+                      Products
+                    </Link>
+                  </div>
+                )}
+              </div>
 
             </div>
           </div>
@@ -152,20 +172,6 @@ export default function Navbar() {
               About
             </Link>
             <Link
-              href="/blog"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
-            >
-              Contact
-            </Link>
-            <Link
               href="/orders"
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
@@ -173,6 +179,23 @@ export default function Navbar() {
             >
               My Orders
             </Link>
+            <div className="border-t border-white/10 pt-2 mt-2">
+              <p className="px-4 py-1 text-xs text-gray-500 uppercase">Admin</p>
+              <Link
+                href="/admin/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+              >
+                Manage Orders
+              </Link>
+              <Link
+                href="/admin/products"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
+              >
+                Manage Products
+              </Link>
+            </div>
           </div>
         </div>
       )}

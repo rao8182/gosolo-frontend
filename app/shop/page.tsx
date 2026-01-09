@@ -25,6 +25,7 @@ export default async function ShopPage() {
     description: product.description,
     price: product.price,
     discountPercent: product.discountPercent,
+    category: product.category,
     imageUrl: product.imageUrl,
     stock: product.stock,
     createdAt: product.createdAt.toISOString()

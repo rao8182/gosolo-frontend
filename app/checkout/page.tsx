@@ -3,8 +3,9 @@
 import { useCartStore } from "@/store/cartStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useUser, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
-// Declare Razorpay type for TypeScript
 declare global {
   interface Window {
     Razorpay: any;
@@ -15,28 +16,49 @@ export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { user, isLoaded } = useUser();
 
   const total = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
+  // Check if email is verified
+  const isEmailVerified = user?.primaryEmailAddress?.verification?.status === "verified";
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
+
   if (items.length === 0) {
     return (
       <main className="min-h-screen pt-32 px-6 bg-black text-white">
-        <p className="text-center text-gray-400">
-          Your cart is empty.
-        </p>
+        <div className="max-w-xl mx-auto text-center">
+          <span className="material-icons-round text-6xl text-gray-600 mb-4 block">shopping_cart</span>
+          <p className="text-gray-400 mb-4">Your cart is empty.</p>
+          <Link
+            href="/shop"
+            className="inline-block px-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors"
+          >
+            Continue Shopping
+          </Link>
+        </div>
       </main>
     );
   }
 
-  // 🔹 RAZORPAY PAYMENT HANDLER
   const placeOrder = async () => {
+    // Double-check auth on the client side
+    if (!user) {
+      router.push("/sign-in?redirect_url=/checkout");
+      return;
+    }
+
+    if (!isEmailVerified) {
+      alert("Please verify your email address before placing an order.");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Step 1: Create order in backend (DB + Razorpay)
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -62,19 +84,17 @@ export default function CheckoutPage() {
         const errorMsg = data?.error || "Order creation failed";
         const errorDetails = data?.details || "";
         console.error("Order creation failed:", { errorMsg, errorDetails, fullResponse: data });
-        throw new Error(`${errorMsg}${errorDetails ? ': ' + errorDetails : ''}`);
+        throw new Error(`${errorMsg}${errorDetails ? ": " + errorDetails : ""}`);
       }
 
-      // Step 2: Open Razorpay Checkout
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Razorpay Key ID from env
-        amount: data.amount * 100, // Amount in paise
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: data.amount * 100,
         currency: data.currency,
         name: "GoSolo",
         description: "Gummies Purchase",
         order_id: data.razorpayOrderId,
         handler: async function (response: any) {
-          // Step 3: Verify payment on backend
           try {
             const verifyRes = await fetch("/api/payments/verify", {
               method: "POST",
@@ -92,10 +112,7 @@ export default function CheckoutPage() {
             const verifyData = await verifyRes.json();
 
             if (verifyRes.ok && verifyData.success) {
-              // Clear cart
               clearCart();
-
-              // Redirect to success page
               router.push(`/order-success?orderId=${data.orderId}`);
             } else {
               throw new Error("Payment verification failed");
@@ -105,9 +122,9 @@ export default function CheckoutPage() {
           }
         },
         prefill: {
-          name: "",
-          email: "",
-          contact: "",
+          name: user?.fullName || "",
+          email: userEmail || "",
+          contact: user?.primaryPhoneNumber?.phoneNumber || "",
         },
         theme: {
           color: "#FF6B35",
@@ -127,81 +144,146 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
-  
+
+  // Loading state
+  if (!isLoaded) {
+    return (
+      <main className="min-h-screen pt-32 px-6 bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen pt-32 px-6 bg-black text-white">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Not signed in - Show sign in prompt */}
+        <SignedOut>
+          <div className="max-w-xl mx-auto text-center py-12">
+            <span className="material-icons-round text-6xl text-primary mb-4 block">lock</span>
+            <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
+            <p className="text-gray-400 mb-6">
+              Please sign in to complete your purchase.
+            </p>
+            <SignInButton mode="modal">
+              <button className="px-8 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors">
+                Sign In to Continue
+              </button>
+            </SignInButton>
+          </div>
+        </SignedOut>
 
-        {/* LEFT: Address + Contact */}
-        <div className="lg:col-span-2 space-y-8">
-          <h1 className="text-3xl font-bold">Checkout</h1>
+        {/* Signed in - Show checkout */}
+        <SignedIn>
+          {/* Email verification warning */}
+          {!isEmailVerified && (
+            <div className="max-w-xl mx-auto mb-8 p-4 rounded-lg bg-yellow-500/20 border border-yellow-500/30 text-yellow-400">
+              <div className="flex items-start gap-3">
+                <span className="material-icons-round">warning</span>
+                <div>
+                  <p className="font-semibold">Email Verification Required</p>
+                  <p className="text-sm mt-1">
+                    Please verify your email address ({userEmail}) before placing an order.
+                    Check your inbox for a verification link from Clerk.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Delivery Details</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+            {/* LEFT: Delivery Details */}
+            <div className="lg:col-span-2 space-y-6 lg:space-y-8">
+              <h1 className="text-2xl sm:text-3xl font-bold">Checkout</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                placeholder="Full Name"
-                className="bg-black border border-white/20 rounded px-4 py-3 text-white"
-              />
-              <input
-                placeholder="Phone Number"
-                className="bg-black border border-white/20 rounded px-4 py-3 text-white"
-              />
+              {/* User Info Card */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="material-icons-round text-primary">account_circle</span>
+                  <div>
+                    <p className="font-semibold">{user?.fullName || "Guest"}</p>
+                    <p className="text-sm text-gray-400">{userEmail}</p>
+                  </div>
+                  {isEmailVerified && (
+                    <span className="ml-auto px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-medium">
+                      Verified
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">Delivery Details</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input
+                    placeholder="Full Name"
+                    defaultValue={user?.fullName || ""}
+                    className="bg-black border border-white/20 rounded px-4 py-3 text-white w-full"
+                  />
+                  <input
+                    placeholder="Phone Number"
+                    defaultValue={user?.primaryPhoneNumber?.phoneNumber || ""}
+                    className="bg-black border border-white/20 rounded px-4 py-3 text-white w-full"
+                  />
+                </div>
+
+                <input
+                  placeholder="Email Address"
+                  defaultValue={userEmail || ""}
+                  className="w-full bg-black border border-white/20 rounded px-4 py-3 text-white"
+                  readOnly
+                />
+
+                <textarea
+                  placeholder="Full Address"
+                  rows={4}
+                  className="w-full bg-black border border-white/20 rounded px-4 py-3 text-white"
+                />
+              </div>
             </div>
 
-            <input
-              placeholder="Email Address"
-              className="w-full bg-black border border-white/20 rounded px-4 py-3 text-white"
-            />
+            {/* RIGHT: Order Summary */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 h-fit">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Order Summary</h2>
 
-            <textarea
-              placeholder="Full Address"
-              rows={4}
-              className="w-full bg-black border border-white/20 rounded px-4 py-3 text-white"
-            />
-          </div>
-        </div>
-
-        {/* RIGHT: Order Summary */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 h-fit">
-          <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-
-          <div className="space-y-4">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between text-sm text-gray-300"
-              >
-                <span>
-                  {item.name} × {item.quantity}
-                </span>
-                <span>
-                  ₹{item.price * item.quantity}
-                </span>
+              <div className="space-y-3 sm:space-y-4">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-sm text-gray-300"
+                  >
+                    <span className="truncate mr-2">
+                      {item.name} × {item.quantity}
+                    </span>
+                    <span className="flex-shrink-0">₹{item.price * item.quantity}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              <div className="border-t border-white/10 mt-4 sm:mt-6 pt-4 flex justify-between text-lg font-semibold">
+                <span>Total</span>
+                <span className="text-primary">₹{total}</span>
+              </div>
+
+              <button
+                onClick={placeOrder}
+                disabled={loading || !isEmailVerified}
+                className="w-full mt-4 sm:mt-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Processing..." : !isEmailVerified ? "Verify Email First" : "Place Order"}
+              </button>
+
+              <p className="text-xs text-gray-500 text-center mt-4">
+                Secured by Razorpay. Your payment info is safe.
+              </p>
+            </div>
           </div>
-
-          <div className="border-t border-white/10 mt-6 pt-4 flex justify-between text-lg font-semibold">
-            <span>Total</span>
-            <span>₹{total}</span>
-          </div>
-
-          <button
-            onClick={placeOrder}
-            disabled={loading}
-            className="w-full mt-6 py-3 rounded-full bg-primary text-black font-semibold hover:opacity-90 transition disabled:opacity-50"
-          >
-            {loading ? "Placing Order..." : "Place Order"}
-          </button>
-
-          <p className="text-xs text-gray-500 text-center mt-4">
-            Payment will be processed securely.
-          </p>
-        </div>
-
+        </SignedIn>
       </div>
     </main>
   );

@@ -2,15 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type OrderItem = {
-  id: string;
-  quantity: number;
-  price: number;
-  product: {
-    name: string;
-  };
-};
+import { useUser, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 
 type Order = {
   id: string;
@@ -20,7 +12,6 @@ type Order = {
   payment?: {
     status: string;
   };
-  items?: OrderItem[];
   _count?: {
     items: number;
   };
@@ -30,10 +21,13 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isLoaded } = useUser();
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (isLoaded) {
+      fetchOrders();
+    }
+  }, [isLoaded]);
 
   const fetchOrders = async () => {
     try {
@@ -42,6 +36,8 @@ export default function OrdersPage() {
       if (res.ok) {
         const data = await res.json();
         setOrders(data.orders || []);
+      } else if (res.status === 401) {
+        setError("Please sign in to view your orders");
       } else {
         setError("Failed to load orders. Please try again.");
       }
@@ -55,6 +51,8 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PAID":
+      case "COMPLETED":
+      case "SUCCESS":
         return "bg-green-500/20 text-green-400 border-green-500/30";
       case "PENDING":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
@@ -63,6 +61,7 @@ export default function OrdersPage() {
       case "DELIVERED":
         return "bg-purple-500/20 text-purple-400 border-purple-500/30";
       case "CANCELLED":
+      case "FAILED":
         return "bg-red-500/20 text-red-400 border-red-500/30";
       default:
         return "bg-gray-500/20 text-gray-400 border-gray-500/30";
@@ -72,6 +71,8 @@ export default function OrdersPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "PAID":
+      case "COMPLETED":
+      case "SUCCESS":
         return "check_circle";
       case "PENDING":
         return "schedule";
@@ -80,124 +81,136 @@ export default function OrdersPage() {
       case "DELIVERED":
         return "inventory_2";
       case "CANCELLED":
+      case "FAILED":
         return "cancel";
       default:
         return "help";
     }
   };
 
-  return (
-    <main className="min-h-screen pt-32 px-6 bg-black text-white" data-testid="orders-page">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold" data-testid="orders-title">My Orders</h1>
-          <Link
-            href="/shop"
-            className="px-4 py-2 rounded-full bg-primary/20 border border-primary/50 text-primary hover:bg-primary/30 transition-colors"
-            data-testid="continue-shopping-btn"
-          >
-            Continue Shopping
-          </Link>
+  if (!isLoaded) {
+    return (
+      <main className="min-h-screen pt-32 px-6 bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
         </div>
+      </main>
+    );
+  }
 
-        {loading ? (
-          <div className="text-center py-12" data-testid="orders-loading">
-            <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-400">Loading orders...</p>
+  return (
+    <main className="min-h-screen pt-24 sm:pt-32 px-4 sm:px-6 bg-black text-white" data-testid="orders-page">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Not signed in */}
+        <SignedOut>
+          <div className="text-center py-12">
+            <span className="material-icons-round text-6xl text-primary mb-4 block">lock</span>
+            <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
+            <p className="text-gray-400 mb-6">Please sign in to view your orders.</p>
+            <SignInButton mode="modal">
+              <button className="px-8 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
           </div>
-        ) : error ? (
-          <div className="text-center py-12" data-testid="orders-error">
-            <span className="material-icons-round text-4xl text-red-400 mb-4 block">error_outline</span>
-            <p className="text-red-400 mb-4">{error}</p>
-            <button
-              onClick={fetchOrders}
-              className="px-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors"
-              data-testid="retry-btn"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-12" data-testid="orders-empty">
-            <span className="material-icons-round text-6xl text-gray-600 mb-4 block">receipt_long</span>
-            <p className="text-gray-400 mb-2 text-lg">No orders yet</p>
-            <p className="text-gray-500 mb-6">Start shopping to see your orders here</p>
+        </SignedOut>
+
+        {/* Signed in */}
+        <SignedIn>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">My Orders</h1>
             <Link
               href="/shop"
-              className="inline-block px-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors"
-              data-testid="start-shopping-btn"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/50 text-primary hover:bg-primary/30 transition-colors w-fit text-sm"
             >
-              Start Shopping
+              Continue Shopping
             </Link>
           </div>
-        ) : (
-          <div className="space-y-4" data-testid="orders-list">
-            {orders.map((order) => (
-              <Link
-                key={order.id}
-                href={`/orders/${order.id}`}
-                className="block p-6 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-white/[0.07] transition-all group"
-                data-testid={`order-card-${order.id}`}
-              >
-                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-                  <div className="space-y-3 flex-1">
-                    {/* Order ID */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Order</span>
-                      <span className="font-mono text-sm bg-white/10 px-2 py-0.5 rounded" data-testid={`order-id-${order.id}`}>
-                        #{order.id.substring(0, 8)}
-                      </span>
-                    </div>
 
-                    {/* Status Badges */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
-                        <span className="material-icons-round text-sm">{getStatusIcon(order.status)}</span>
-                        {order.status}
-                      </span>
-                      {order.payment && (
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.payment.status)}`}>
-                          Payment: {order.payment.status}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Items preview */}
-                    {order._count && order._count.items > 0 && (
-                      <p className="text-sm text-gray-400">
-                        {order._count.items} item{order._count.items > 1 ? 's' : ''}
-                      </p>
-                    )}
-
-                    {/* Date */}
-                    <p className="text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-
-                  {/* Amount and Action */}
-                  <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
-                    <p className="text-2xl font-bold text-primary" data-testid={`order-amount-${order.id}`}>
-                      ₹{order.totalAmount.toLocaleString()}
-                    </p>
-                    <span className="text-sm text-gray-500 group-hover:text-primary transition-colors flex items-center gap-1">
-                      View Details
-                      <span className="material-icons-round text-sm group-hover:translate-x-1 transition-transform">
-                        arrow_forward
-                      </span>
-                    </span>
-                  </div>
-                </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-400">Loading orders...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <span className="material-icons-round text-4xl text-red-400 mb-4 block">error_outline</span>
+              <p className="text-red-400 mb-4">{error}</p>
+              <button onClick={fetchOrders} className="px-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors">
+                Try Again
+              </button>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-12">
+              <span className="material-icons-round text-6xl text-gray-600 mb-4 block">receipt_long</span>
+              <p className="text-gray-400 mb-2 text-lg">No orders yet</p>
+              <p className="text-gray-500 mb-6">Start shopping to see your orders here</p>
+              <Link href="/shop" className="inline-block px-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors">
+                Start Shopping
               </Link>
-            ))}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              {orders.map((order) => (
+                <Link
+                  key={order.id}
+                  href={`/orders/${order.id}`}
+                  className="block p-4 sm:p-6 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-white/[0.07] transition-all group"
+                >
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3 flex-1">
+                      {/* Order ID */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs sm:text-sm text-gray-500">Order</span>
+                        <span className="font-mono text-xs sm:text-sm bg-white/10 px-2 py-0.5 rounded">
+                          #{order.id.substring(0, 8)}
+                        </span>
+                      </div>
+
+                      {/* Status Badges */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
+                          <span className="material-icons-round text-xs sm:text-sm">{getStatusIcon(order.status)}</span>
+                          {order.status}
+                        </span>
+                        {order.payment && (
+                          <span className={`inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.payment.status)}`}>
+                            Payment: {order.payment.status}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Items & Date */}
+                      <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-400">
+                        {order._count && order._count.items > 0 && (
+                          <span>{order._count.items} item{order._count.items > 1 ? "s" : ""}</span>
+                        )}
+                        <span>
+                          {new Date(order.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Amount and Action */}
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
+                      <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount.toLocaleString()}</p>
+                      <span className="text-xs sm:text-sm text-gray-500 group-hover:text-primary transition-colors flex items-center gap-1">
+                        View Details
+                        <span className="material-icons-round text-xs sm:text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </SignedIn>
       </div>
     </main>
   );

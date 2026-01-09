@@ -15,27 +15,8 @@ const isAdminRoute = createRouteMatcher([
   "/admin(.*)",
 ]);
 
-// Public routes (no auth needed)
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/shop(.*)",
-  "/product(.*)",
-  "/cart(.*)",
-  "/about(.*)",
-  "/contact(.*)",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/products(.*)",
-  "/api/upload(.*)",
-]);
-
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
-  
-  // Allow public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
-  }
 
   // Check admin routes
   if (isAdminRoute(req)) {
@@ -44,15 +25,12 @@ export default clerkMiddleware(async (auth, req) => {
       signInUrl.searchParams.set("redirect_url", req.url);
       return NextResponse.redirect(signInUrl);
     }
-    
+
     // Check if user is admin
     const userEmail = sessionClaims?.email as string | undefined;
     if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
-      // Redirect non-admins to home
       return NextResponse.redirect(new URL("/", req.url));
     }
-    
-    return NextResponse.next();
   }
 
   // Check protected routes (checkout, orders)
@@ -69,7 +47,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
+    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",

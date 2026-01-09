@@ -7,6 +7,8 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - Order management for users and admins
 - Stock management with automatic deduction on purchase
 - Admin product management with discounts
+- User authentication with Clerk
+- Role-based admin access
 
 ## Tech Stack
 - **Framework**: Next.js 14 (App Router)
@@ -15,12 +17,14 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Prisma
 - **Payments**: Razorpay (Test Mode)
+- **Authentication**: Clerk
+- **Image Storage**: Cloudinary
 - **Deployment**: Vercel
 
 ## Database Schema
-- `Product`: { id, name, description, price, discountPercent, stock, imageUrl, isActive, createdAt, updatedAt }
-- `Order`: { id, totalAmount, status: [PENDING, PAID, SHIPPED, DELIVERED, CANCELLED], userId? }
-- `OrderItem`: { id, orderId, productId, name, quantity, price }
+- `Product`: { id, name, description, price, discountPercent, stock, category, imageUrl, images[], isActive, createdAt, updatedAt }
+- `Order`: { id, clerkUserId, userEmail, totalAmount, status, createdAt }
+- `OrderItem`: { id, orderId, productId, quantity, price }
 - `Payment`: { id, orderId, amount, currency, status, provider, razorpayPaymentId, razorpayOrderId, razorpaySignature }
 
 ## Implemented Features
@@ -34,69 +38,69 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - [x] Payment verification and order status updates
 - [x] Stock deduction on successful payment
 
-### Phase 2: Orders & Admin Management (Completed - Jan 4, 2026)
+### Phase 2: Orders & Admin Management (Completed)
 - [x] User Orders page (`/orders`)
 - [x] Order Detail page (`/orders/[id]`) with progress tracker
 - [x] Admin Orders page (`/admin/orders`) with status management
 - [x] Status transition validation
 - [x] Payment status display in orders table
 
-### Phase 3: Admin Product Management (Completed - Jan 4, 2026)
+### Phase 3: Admin Product Management (Completed)
 - [x] Admin Products page (`/admin/products`)
-  - Product table with images, prices, discounts, stock, status
-  - Stats cards (Total, Active, Out of Stock, On Discount)
-  - Quick stock +/- buttons for instant updates
-  - Add/Edit product modal with form validation
-  - **Image upload** (JPEG, PNG, WebP, GIF, max 5MB)
-  - Delete product (soft delete for products with orders)
-- [x] Discount System
-  - Admin sets discount percentage (0-100%)
-  - Shop page shows discount badges ("20% OFF")
-  - Strikethrough original price with discounted price
-  - "Save ₹X" display
-- [x] Admin Navigation
-  - Admin dropdown in navbar (Orders, Products)
-  - Mobile menu with admin section
+- [x] Image upload to Cloudinary (up to 4 images)
+- [x] Product categories (Gummies, Slim Shake, Fat Burner)
+- [x] Discount System with badges
+- [x] Quick stock +/- buttons
 
-### APIs Implemented
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/products` | GET | Active products with stock > 0 |
-| `/api/admin/products` | GET | All products (including inactive) |
-| `/api/admin/products` | POST | Create new product |
-| `/api/admin/products/[id]` | GET | Single product details |
-| `/api/admin/products/[id]` | PATCH | Update product |
-| `/api/admin/products/[id]` | DELETE | Soft/hard delete |
-| `/api/orders` | POST | Create order + Razorpay payment |
-| `/api/orders/list` | GET | User orders |
-| `/api/payments/verify` | POST | Verify Razorpay payment |
-| `/api/admin/orders` | GET | All orders |
-| `/api/admin/orders/[id]` | GET | Single order |
-| `/api/admin/orders/[id]` | PATCH | Update order status |
+### Phase 4: Authentication & Admin Controls (Completed - Jan 9, 2026)
+- [x] Clerk authentication integration
+- [x] Sign-in / Sign-up pages with social OAuth
+- [x] Protected routes (checkout, orders require login)
+- [x] Email verification required for orders
+- [x] Admin email whitelist (anjaliy471@gmail.com)
+- [x] Protected admin routes (`/admin/*`)
+- [x] User orders filtered by clerkUserId
+- [x] Orders store userId and userEmail
 
-## Testing Status
-- Iteration 1: Orders API - 15/15 passed
-- Iteration 2: Admin Products API - 22/22 passed
-- Test files: `/app/tests/`
+### Phase 5: UX Polish (Completed - Jan 9, 2026)
+- [x] Active page indicator in navbar
+- [x] Category filters on shop page
+- [x] Responsive design (mobile, tablet, desktop)
+- [x] Responsive admin dashboard
 
-## Backlog / Future Tasks
+## Authentication Rules
+| Action | Auth Required | Email Verified |
+|--------|--------------|----------------|
+| Browse shop | No | No |
+| View products | No | No |
+| Add to cart | No | No |
+| Place order | Yes | Yes |
+| View my orders | Yes | No |
+| Admin access | Yes (admin email) | No |
 
-### P1 - High Priority
-- [ ] User authentication (JWT or OAuth)
-- [ ] Role-based access control (Admin vs User)
+## Admin Access
+- Admin email: `anjaliy471@gmail.com`
+- Protected routes: `/admin`, `/admin/products`, `/admin/orders`
 
-### P2 - Medium Priority
-- [ ] Email notifications on order status change
-- [ ] Product categories/tags
-- [ ] Search and filter products
+## Product Categories
+- Gummies
+- Slim Shake  
+- Fat Burner
 
-### P3 - Low Priority
-- [ ] Dashboard analytics
-- [ ] Coupons and promotions (beyond simple discounts)
-- [ ] Product reviews and ratings
-- [ ] Wishlist functionality
+## Environment Variables (Vercel)
+```
+DATABASE_URL=...
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
+NEXT_PUBLIC_RAZORPAY_KEY_ID=...
+CLOUDINARY_CLOUD_NAME=dgu9qqxh9
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
+CLERK_SECRET_KEY=...
+```
 
 ## Test Credentials
 **Razorpay Test Cards:**
-- Success: `4111 1111 1111 1111` (any future expiry, any CVV)
+- Success: `4111 1111 1111 1111`
 - Failure: `4000 0000 0000 0002`

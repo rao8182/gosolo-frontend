@@ -7,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String?  @unique
-  phone     String?  @unique
-  createdAt DateTime @default(now())
-  orders    Order[]
-}
-
 model Product {
   id              String      @id @default(uuid())
   name            String
@@ -22,7 +14,9 @@ model Product {
   price           Int
   discountPercent Int         @default(0)
   stock           Int
+  category        String      @default("Gummies")
   imageUrl        String
+  images          String[]    @default([])
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @default(now()) @updatedAt
@@ -31,8 +25,8 @@ model Product {
 
 model Order {
   id          String       @id @default(uuid())
-  userId      String?
-  user        User?        @relation(fields: [userId], references: [id])
+  clerkUserId String?
+  userEmail   String?
   status      OrderStatus  @default(PENDING)
   totalAmount Int
   createdAt   DateTime     @default(now())

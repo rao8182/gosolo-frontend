@@ -1,18 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
-// Initialize Razorpay
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
-// Add CORS headers for preview environment
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
 };
 
 export async function OPTIONS() {
@@ -28,11 +27,40 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // Check authentication
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in to place an order." },
+        { status: 401, headers: corsHeaders }
+      );
+    }
 
+    // Get user details
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unable to retrieve user information." },
+        { status: 401, headers: corsHeaders }
+      );
+    }
+
+    // Check email verification
+    const primaryEmail = user.emailAddresses.find(
+      (email) => email.id === user.primaryEmailAddressId
+    );
+    
+    if (!primaryEmail || primaryEmail.verification?.status !== "verified") {
+      return NextResponse.json(
+        { error: "Please verify your email address before placing an order." },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
+    const body = await req.json();
     const { items, totalAmount } = body;
 
-    // ✅ VALIDATION 1: Check cart is not empty
+    // Validation: Check cart is not empty
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "Cart is empty" },
@@ -40,7 +68,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ VALIDATION 2: Validate each item has required fields and positive quantity
+    // Validation: Check each item
     for (const item of items) {
       if (!item.id || !item.quantity || item.quantity <= 0) {
         return NextResponse.json(
@@ -50,7 +78,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // ✅ VALIDATION 3: Check totalAmount is valid
+    // Validation: Check totalAmount
     if (!totalAmount || totalAmount <= 0) {
       return NextResponse.json(
         { error: "Invalid total amount" },
@@ -58,23 +86,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ VALIDATION 3: Verify all product IDs exist in DB and validate prices
+    // Verify products exist and have stock
     const productIds = items.map((item: any) => item.id);
     const dbProducts = await prisma.product.findMany({
-      where: {
-        id: { in: productIds },
-      },
-      select: {
-        id: true,
-        price: true,
-        stock: true,
-        name: true,
-      },
+      where: { id: { in: productIds } },
+      select: { id: true, price: true, stock: true, name: true, discountPercent: true },
     });
 
-    // Check if all products exist
     if (dbProducts.length !== productIds.length) {
-      const foundIds = dbProducts.map(p => p.id);
+      const foundIds = dbProducts.map((p) => p.id);
       const missingIds = productIds.filter((id: string) => !foundIds.includes(id));
       return NextResponse.json(
         { error: `Invalid product IDs: ${missingIds.join(", ")}` },
@@ -82,10 +102,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create a map for quick price lookup
-    const productMap = new Map(dbProducts.map(p => [p.id, p]));
+    const productMap = new Map(dbProducts.map((p) => [p.id, p]));
 
-    // Validate prices match database (prevent tampering)
+    // Validate stock
     for (const item of items) {
       const dbProduct = productMap.get(item.id);
       if (!dbProduct) {
@@ -94,13 +113,6 @@ export async function POST(req: Request) {
           { status: 400, headers: corsHeaders }
         );
       }
-
-      // Price validation - use DB price for security
-      if (dbProduct.price !== item.price) {
-        // Silently use DB price to prevent price manipulation
-      }
-
-      // Check stock availability
       if (dbProduct.stock < item.quantity) {
         return NextResponse.json(
           { error: `Insufficient stock for ${dbProduct.name}. Available: ${dbProduct.stock}` },
@@ -109,42 +121,48 @@ export async function POST(req: Request) {
       }
     }
 
-    // ✅ CREATE RAZORPAY ORDER
+    // Calculate actual total with discounts
+    let calculatedTotal = 0;
+    for (const item of items) {
+      const dbProduct = productMap.get(item.id)!;
+      const discountedPrice = Math.round(dbProduct.price * (1 - dbProduct.discountPercent / 100));
+      calculatedTotal += discountedPrice * item.quantity;
+    }
+
+    // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
-      amount: totalAmount * 100, // Amount in paise (multiply by 100)
+      amount: calculatedTotal * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
 
-    // ✅ CREATE ORDER IN TRANSACTION
+    // Create order in transaction
     const order = await prisma.$transaction(async (tx) => {
-      // Create the order
       const newOrder = await tx.order.create({
         data: {
-          userId: null, // Guest checkout - no auth yet
+          clerkUserId: userId,
+          userEmail: primaryEmail.emailAddress,
           status: "PENDING",
-          totalAmount: totalAmount,
+          totalAmount: calculatedTotal,
           items: {
             create: items.map((item: any) => {
-              const dbProduct = productMap.get(item.id);
+              const dbProduct = productMap.get(item.id)!;
+              const discountedPrice = Math.round(dbProduct.price * (1 - dbProduct.discountPercent / 100));
               return {
                 productId: item.id,
                 quantity: item.quantity,
-                price: dbProduct!.price, // Use DB price for security
+                price: discountedPrice,
               };
             }),
           },
         },
-        include: {
-          items: true,
-        },
+        include: { items: true },
       });
 
-      // Create Payment record with Razorpay order ID
       await tx.payment.create({
         data: {
           orderId: newOrder.id,
-          amount: totalAmount,
+          amount: calculatedTotal,
           currency: "INR",
           status: "PENDING",
           provider: "RAZORPAY",
@@ -152,34 +170,19 @@ export async function POST(req: Request) {
         },
       });
 
-      // Optional: Update stock (uncomment if needed)
-      // for (const item of items) {
-      //   await tx.product.update({
-      //     where: { id: item.id },
-      //     data: {
-      //       stock: {
-      //         decrement: item.quantity,
-      //       },
-      //     },
-      //   });
-      // }
-
       return newOrder;
     });
 
-    // ✅ RETURN ORDER ID + RAZORPAY ORDER ID
     return NextResponse.json(
-      { 
+      {
         orderId: order.id,
         razorpayOrderId: razorpayOrder.id,
-        amount: totalAmount,
+        amount: calculatedTotal,
         currency: "INR",
       },
       { status: 201, headers: corsHeaders }
     );
   } catch (err) {
-    console.error("❌ ORDER API ERROR:", err);
-    // Return detailed error for debugging
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json(
       { error: "Failed to create order. Please try again.", details: errorMessage },
@@ -187,4 +190,3 @@ export async function POST(req: Request) {
     );
   }
 }
-  

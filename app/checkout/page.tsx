@@ -12,10 +12,13 @@ declare global {
   }
 }
 
+type PaymentMethod = "RAZORPAY" | "COD";
+
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("RAZORPAY");
   const { user, isLoaded } = useUser();
 
   const total = items.reduce(
@@ -67,6 +70,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items,
           totalAmount: total,
+          paymentMethod,
         }),
       });
 
@@ -80,6 +84,19 @@ export default function CheckoutPage() {
         throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
+      // Handle COD orders
+      if (paymentMethod === "COD") {
+        if (!res.ok || !data?.orderId) {
+          const errorMsg = data?.error || "Order creation failed";
+          const errorDetails = data?.details || "";
+          throw new Error(`${errorMsg}${errorDetails ? ": " + errorDetails : ""}`);
+        }
+        clearCart();
+        router.push(`/order-success?orderId=${data.orderId}`);
+        return;
+      }
+
+      // Handle Razorpay orders
       if (!res.ok || !data?.orderId || !data?.razorpayOrderId) {
         const errorMsg = data?.error || "Order creation failed";
         const errorDetails = data?.details || "";

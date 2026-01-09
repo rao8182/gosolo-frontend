@@ -262,6 +262,72 @@ export default function CheckoutPage() {
                   className="w-full bg-black border border-white/20 rounded px-4 py-3 text-white"
                 />
               </div>
+
+              {/* Payment Method Selection */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">Payment Method</h2>
+                
+                <div className="space-y-3">
+                  {/* Razorpay Option */}
+                  <label 
+                    className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
+                      paymentMethod === "RAZORPAY" 
+                        ? "border-primary bg-primary/10" 
+                        : "border-white/20 hover:border-white/40"
+                    }`}
+                    data-testid="payment-method-razorpay"
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="RAZORPAY"
+                      checked={paymentMethod === "RAZORPAY"}
+                      onChange={() => setPaymentMethod("RAZORPAY")}
+                      className="w-5 h-5 accent-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="material-icons-round text-primary">credit_card</span>
+                        <span className="font-semibold">Pay Online</span>
+                      </div>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Credit/Debit Card, UPI, Net Banking, Wallets
+                      </p>
+                    </div>
+                    <span className="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-medium">
+                      Recommended
+                    </span>
+                  </label>
+
+                  {/* COD Option */}
+                  <label 
+                    className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all ${
+                      paymentMethod === "COD" 
+                        ? "border-primary bg-primary/10" 
+                        : "border-white/20 hover:border-white/40"
+                    }`}
+                    data-testid="payment-method-cod"
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="COD"
+                      checked={paymentMethod === "COD"}
+                      onChange={() => setPaymentMethod("COD")}
+                      className="w-5 h-5 accent-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="material-icons-round text-yellow-500">payments</span>
+                        <span className="font-semibold">Cash on Delivery</span>
+                      </div>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Pay when your order arrives
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* RIGHT: Order Summary */}

@@ -104,3 +104,19 @@ CLERK_SECRET_KEY=...
 **Razorpay Test Cards:**
 - Success: `4111 1111 1111 1111`
 - Failure: `4000 0000 0000 0002`
+
+## Pending/Upcoming Tasks
+
+### P1 (High Priority)
+- [ ] Product Search Functionality - Add search bar to find products by name
+
+### P2 (Medium Priority)
+- [ ] Coupon Codes System - Admin creates discount codes for checkout
+
+### P3 (Future/Backlog)
+- [ ] Product Reviews & Ratings
+- [ ] Admin Dashboard Analytics
+- [ ] Full role management system (replace hardcoded admin email)
+
+## Session Log
+- **Jan 9, 2026**: Verified home page responsiveness - all sections (hero, products, target audience, reviews, CTA, footer) display correctly across mobile (375px), tablet (768px), and desktop (1920px) viewports. No fixes needed - responsiveness was already implemented.

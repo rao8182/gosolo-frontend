@@ -1,36 +1,28 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// Admin email(s) that have access to /admin routes
-const ADMIN_EMAILS = ["anjaliy471@gmail.com"];
-
 // Routes that require authentication
 const isProtectedRoute = createRouteMatcher([
   "/checkout(.*)",
   "/orders(.*)",
 ]);
 
-// Admin routes
+// Admin routes - we'll check admin access at the page/API level
 const isAdminRoute = createRouteMatcher([
   "/admin(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
-  // Check admin routes
+  // Check admin routes - require login, admin check happens at page level
   if (isAdminRoute(req)) {
     if (!userId) {
       const signInUrl = new URL("/sign-in", req.url);
       signInUrl.searchParams.set("redirect_url", req.url);
       return NextResponse.redirect(signInUrl);
     }
-
-    // Check if user is admin
-    const userEmail = sessionClaims?.email as string | undefined;
-    if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+    // Admin email check will be done at the page/API level
   }
 
   // Check protected routes (checkout, orders)

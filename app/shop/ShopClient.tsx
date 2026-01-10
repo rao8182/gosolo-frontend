@@ -56,7 +56,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat
-                    ? "bg-primary text-black"
+                    ? "bg-white text-black"
                     : "bg-white/10 text-gray-300 hover:bg-white/20"
                 }`}
                 data-testid={`category-filter-${cat.toLowerCase().replace(" ", "-")}`}
@@ -76,7 +76,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat
-                    ? "bg-primary text-black"
+                    ? "bg-white text-black"
                     : "bg-white/10 text-gray-300"
                 }`}
               >
@@ -92,7 +92,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
             <p className="text-gray-400 mb-4">No products found in this category.</p>
             <button
               onClick={() => setSelectedCategory("All")}
-              className="px-6 py-2 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors"
+              className="px-6 py-2 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-colors"
             >
               View All Products
             </button>
@@ -108,13 +108,13 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
               return (
                 <div
                   key={product.id}
-                  className="relative p-4 sm:p-6 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group"
+                  className="relative rounded-xl bg-white/5 border border-white/10 hover:border-white/30 transition-colors group overflow-hidden"
                   data-testid={`product-${product.id}`}
                 >
                   {/* Discount Badge */}
                   {hasDiscount && (
                     <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-                      <span className="px-2 sm:px-3 py-1 rounded-full bg-green-500 text-black text-xs sm:text-sm font-bold">
+                      <span className="px-2 sm:px-3 py-1 rounded-full bg-white text-black text-xs sm:text-sm font-bold">
                         {product.discountPercent}% OFF
                       </span>
                     </div>
@@ -122,73 +122,79 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
 
                   {/* Category Badge */}
                   <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
-                    <span className="px-2 py-1 rounded-full bg-white/10 text-gray-300 text-xs">
+                    <span className="px-2 py-1 rounded-full bg-black/50 text-gray-300 text-xs">
                       {product.category}
                     </span>
                   </div>
 
-                  <Link href={`/product/${product.id}`} className="block mb-4">
-                    {product.imageUrl && (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-40 sm:h-48 object-contain group-hover:scale-105 transition-transform"
-                      />
-                    )}
+                  {/* Image Container - Fixed aspect ratio */}
+                  <Link href={`/product/${product.id}`} className="block">
+                    <div className="aspect-square bg-white/5 overflow-hidden">
+                      {product.imageUrl && (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
+                    </div>
                   </Link>
 
-                  <Link href={`/product/${product.id}`}>
-                    <h3 className="text-base sm:text-lg font-semibold mb-2 hover:text-primary transition-colors line-clamp-1">
-                      {product.name}
-                    </h3>
-                  </Link>
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
-                  
-                  {/* Price Display */}
-                  <div className="mb-4">
-                    {hasDiscount ? (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-gray-500 line-through text-base sm:text-lg">₹{product.price}</span>
-                        <span className="text-primary font-bold text-lg sm:text-xl">₹{finalPrice}</span>
-                        <span className="text-green-400 text-xs sm:text-sm">Save ₹{product.price - finalPrice}</span>
-                      </div>
-                    ) : (
-                      <p className="text-primary font-bold text-lg sm:text-xl">₹{product.price}</p>
-                    )}
-                  </div>
-                  
-                  <p className="text-gray-500 text-xs mb-4">
-                    {product.stock > 10 
-                      ? `In Stock` 
-                      : product.stock > 0 
-                        ? `Only ${product.stock} left!` 
-                        : "Out of Stock"}
-                  </p>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        addItem({
-                          id: product.id,
-                          name: product.name,
-                          price: finalPrice,
-                          imageUrl: product.imageUrl,
-                          quantity: 1,
-                        });
-                        alert(`${product.name} added to cart!`);
-                      }}
-                      disabled={product.stock === 0}
-                      className="flex-1 py-2 rounded bg-primary text-black font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-                      data-testid={`add-to-cart-${product.id}`}
-                    >
-                      {product.stock === 0 ? "Out of Stock" : "Add to cart"}
-                    </button>
-                    <Link
-                      href={`/product/${product.id}`}
-                      className="px-3 sm:px-4 py-2 rounded border border-white/20 hover:bg-white/10 transition-colors flex items-center justify-center"
-                    >
-                      <span className="material-icons-round text-sm">visibility</span>
+                  {/* Content */}
+                  <div className="p-4 sm:p-6">
+                    <Link href={`/product/${product.id}`}>
+                      <h3 className="text-base sm:text-lg font-semibold mb-2 hover:text-gray-300 transition-colors line-clamp-1">
+                        {product.name}
+                      </h3>
                     </Link>
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+                    
+                    {/* Price Display */}
+                    <div className="mb-4">
+                      {hasDiscount ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-gray-500 line-through text-base sm:text-lg">₹{product.price}</span>
+                          <span className="text-white font-bold text-lg sm:text-xl">₹{finalPrice}</span>
+                          <span className="text-gray-400 text-xs sm:text-sm">Save ₹{product.price - finalPrice}</span>
+                        </div>
+                      ) : (
+                        <p className="text-white font-bold text-lg sm:text-xl">₹{product.price}</p>
+                      )}
+                    </div>
+                    
+                    <p className="text-gray-500 text-xs mb-4">
+                      {product.stock > 10 
+                        ? `In Stock` 
+                        : product.stock > 0 
+                          ? `Only ${product.stock} left!` 
+                          : "Out of Stock"}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          addItem({
+                            id: product.id,
+                            name: product.name,
+                            price: finalPrice,
+                            imageUrl: product.imageUrl,
+                            quantity: 1,
+                          });
+                          alert(`${product.name} added to cart!`);
+                        }}
+                        disabled={product.stock === 0}
+                        className="flex-1 py-2 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                        data-testid={`add-to-cart-${product.id}`}
+                      >
+                        {product.stock === 0 ? "Out of Stock" : "Add to cart"}
+                      </button>
+                      <Link
+                        href={`/product/${product.id}`}
+                        className="px-3 sm:px-4 py-2 rounded-full border border-white/20 hover:bg-white/10 transition-colors flex items-center justify-center"
+                      >
+                        <span className="material-icons-round text-sm">visibility</span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );

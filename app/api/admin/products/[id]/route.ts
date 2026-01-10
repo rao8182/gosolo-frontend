@@ -39,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, description, price, stock, imageUrl, images, discountPercent, isActive, category } = body;
+    const { name, description, indications, benefits, price, stock, imageUrl, images, discountPercent, isActive, category } = body;
 
     const existingProduct = await prisma.product.findUnique({ where: { id } });
 
@@ -61,6 +61,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         return NextResponse.json({ success: false, error: "Description must be a string" }, { status: 400, headers: corsHeaders });
       }
       updateData.description = description.trim();
+    }
+
+    if (indications !== undefined) {
+      updateData.indications = typeof indications === "string" ? indications.trim() : "";
+    }
+
+    if (benefits !== undefined) {
+      updateData.benefits = typeof benefits === "string" ? benefits.trim() : "";
     }
 
     if (price !== undefined) {

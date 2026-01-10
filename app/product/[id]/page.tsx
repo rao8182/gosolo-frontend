@@ -40,6 +40,8 @@ export default async function ProductPage({
         id: product.id,
         name: product.name,
         description: product.description,
+        indications: product.indications || "",
+        benefits: product.benefits || "",
         price: product.price,
         discountPercent: product.discountPercent,
         imageUrl: product.imageUrl,

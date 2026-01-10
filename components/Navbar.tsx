@@ -249,14 +249,14 @@ export default function Navbar() {
                 <Link
                   href="/admin/products"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/products") ? "text-white bg-white/5" : "text-gray-300"}`}
+                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/products") ? "text-primary bg-white/5" : "text-gray-300"}`}
                 >
                   Manage Products
                 </Link>
                 <Link
                   href="/admin/settings"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/settings") ? "text-white bg-white/5" : "text-gray-300"}`}
+                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/settings") ? "text-primary bg-white/5" : "text-gray-300"}`}
                 >
                   Admin Settings
                 </Link>

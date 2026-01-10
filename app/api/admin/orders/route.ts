@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { currentUser } from "@clerk/nextjs/server";
+import { isAdminEmail } from "@/lib/admin";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +15,17 @@ export async function OPTIONS() {
 
 export async function GET() {
   try {
+    // Check admin access
+    const user = await currentUser();
+    const userEmail = user?.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress;
+    
+    if (!user || !(await isAdminEmail(userEmail))) {
+      return NextResponse.json(
+        { success: false, error: "Admin access required" },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
     const orders = await prisma.order.findMany({
       take: 100,
       orderBy: {

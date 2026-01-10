@@ -31,6 +31,9 @@ export default async function ProductPage({
     take: 3,
   });
 
+  // Combine main image with additional images
+  const allImages = [product.imageUrl, ...(product.images || [])].filter(Boolean);
+
   return (
     <ProductClient 
       product={{
@@ -40,6 +43,7 @@ export default async function ProductPage({
         price: product.price,
         discountPercent: product.discountPercent,
         imageUrl: product.imageUrl,
+        images: allImages,
         stock: product.stock,
         createdAt: product.createdAt.toISOString(),
       }}

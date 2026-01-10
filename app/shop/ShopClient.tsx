@@ -203,6 +203,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
           </div>
         )}
       </div>
+      <Footer />
     </main>
   );
 }

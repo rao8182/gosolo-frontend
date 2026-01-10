@@ -58,7 +58,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden lg:block">
-          <div className="p-px rounded-full bg-linear-to-r from-white/20 to-white/10">
+          <div className="p-px rounded-full bg-linear-to-r from-primary/50 to-secondary/50">
             <div className="bg-[#1E1E1E] glass-panel rounded-full px-6 xl:px-8 py-3 flex items-center gap-4 xl:gap-6 text-sm font-medium">
               
               <Link href="/" className={linkClass("/")}>
@@ -82,7 +82,7 @@ export default function Navbar() {
               {/* Admin Link - Only for admins */}
               {isAdmin && (
                 <div className="relative group">
-                  <button className={`flex items-center gap-1 ${isActive("/admin") ? "text-white font-semibold" : "text-gray-300"} hover:text-white transition-colors`}>
+                  <button className={`flex items-center gap-1 ${isActive("/admin") ? "text-primary font-semibold" : "text-gray-300"} hover:text-primary transition-colors`}>
                     Admin
                     <span className="material-icons-round text-sm">expand_more</span>
                   </button>
@@ -118,13 +118,13 @@ export default function Navbar() {
           {/* Cart Button */}
           <Link 
             href="/cart"
-            className={`relative px-2 sm:px-3 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-1 sm:gap-2 ${isActive("/cart") ? "text-white" : "text-gray-300"}`}
+            className={`relative px-2 sm:px-3 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-1 sm:gap-2 ${isActive("/cart") ? "text-primary" : "text-white"}`}
             data-testid="nav-cart-button"
           >
             <span className="material-icons-round text-xl">shopping_cart</span>
             <span className="text-sm font-medium hidden sm:inline">Cart</span>
             {cartItemCount > 0 && (
-              <span className="bg-white text-black text-xs font-bold rounded-full px-1.5 sm:px-2 py-0.5 min-w-[18px] sm:min-w-[20px] text-center">
+              <span className="bg-primary text-black text-xs font-bold rounded-full px-1.5 sm:px-2 py-0.5 min-w-[18px] sm:min-w-[20px] text-center">
                 {cartItemCount}
               </span>
             )}
@@ -134,7 +134,7 @@ export default function Navbar() {
           <SignedOut>
             <Link
               href="/sign-in"
-              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition-colors text-sm font-medium"
+              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-primary text-black hover:bg-orange-600 transition-colors text-sm font-medium"
             >
               <span className="material-icons-round text-sm">person</span>
               Sign In

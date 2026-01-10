@@ -30,7 +30,7 @@ export async function GET() {
     return NextResponse.json({ 
       success: true, 
       adminUsers,
-      superAdminEmail: SUPER_ADMIN_EMAIL,
+      superAdminEmails: SUPER_ADMIN_EMAILS,
     }, { headers: corsHeaders });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

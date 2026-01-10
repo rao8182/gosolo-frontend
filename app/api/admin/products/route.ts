@@ -99,6 +99,8 @@ export async function POST(req: Request) {
       data: {
         name: name.trim(),
         description: description.trim(),
+        indications: typeof indications === "string" ? indications.trim() : "",
+        benefits: typeof benefits === "string" ? benefits.trim() : "",
         price: Math.round(price),
         stock: Math.round(stock),
         category,

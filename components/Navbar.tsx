@@ -99,6 +99,12 @@ export default function Navbar() {
                     >
                       Products
                     </Link>
+                    <Link
+                      href="/admin/settings"
+                      className="block px-4 py-2 hover:bg-white/10 transition-colors text-gray-300"
+                    >
+                      Settings
+                    </Link>
                   </div>
                 </div>
               )}

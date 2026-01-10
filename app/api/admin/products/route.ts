@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, description, price, stock, imageUrl, images, discountPercent = 0, isActive = true, category } = body;
+    const { name, description, indications = "", benefits = "", price, stock, imageUrl, images, discountPercent = 0, isActive = true, category } = body;
 
     // Validation
     if (!name || typeof name !== "string" || name.trim().length === 0) {

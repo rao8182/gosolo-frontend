@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 
 // Hardcoded super admins who always have access and cannot be removed
 const SUPER_ADMIN_EMAILS = [
-  "anjaliy471@gmail.com",
   "contactus.gosolo@gmail.com",
 ];
 

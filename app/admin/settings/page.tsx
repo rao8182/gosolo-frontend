@@ -12,7 +12,7 @@ type AdminUser = {
 
 export default function AdminSettingsPage() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [superAdminEmail, setSuperAdminEmail] = useState<string>("");
+  const [superAdminEmails, setSuperAdminEmails] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function AdminSettingsPage() {
       
       if (res.ok && data.success) {
         setAdminUsers(data.adminUsers || []);
-        setSuperAdminEmail(data.superAdminEmail || "");
+        setSuperAdminEmails(data.superAdminEmails || []);
       } else {
         setError(data.error || "Failed to load admin users");
       }

@@ -232,15 +232,15 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {/* Features */}
             <div className="pt-6 space-y-3 text-sm text-gray-400">
               <div className="flex items-center gap-2">
-                <span className="material-icons-round text-white text-sm">local_shipping</span>
+                <span className="material-icons-round text-primary text-sm">local_shipping</span>
                 <span>Free shipping on orders above ₹999</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="material-icons-round text-white text-sm">verified</span>
+                <span className="material-icons-round text-primary text-sm">verified</span>
                 <span>100% Natural Ingredients</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="material-icons-round text-white text-sm">refresh</span>
+                <span className="material-icons-round text-primary text-sm">refresh</span>
                 <span>30-day money-back guarantee</span>
               </div>
             </div>
@@ -254,15 +254,15 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {product.indications && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <span className="material-icons-round text-white">medical_information</span>
+                  <span className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="material-icons-round text-primary">medical_information</span>
                   </span>
                   <h3 className="text-xl font-bold">Indications For Use</h3>
                 </div>
                 <ul className="space-y-3">
                   {product.indications.split('\n').filter(line => line.trim()).map((indication, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      <span className="material-icons-round text-white text-sm mt-1">check_circle</span>
+                      <span className="material-icons-round text-primary text-sm mt-1">check_circle</span>
                       <span className="text-gray-300">{indication.trim()}</span>
                     </li>
                   ))}
@@ -274,15 +274,15 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {product.benefits && (
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-                    <span className="material-icons-round text-white">stars</span>
+                  <span className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <span className="material-icons-round text-green-500">stars</span>
                   </span>
                   <h3 className="text-xl font-bold">Benefits</h3>
                 </div>
                 <ul className="space-y-3">
                   {product.benefits.split('\n').filter(line => line.trim()).map((benefit, index) => (
                     <li key={index} className="flex items-start gap-3">
-                      <span className="material-icons-round text-white text-sm mt-1">verified</span>
+                      <span className="material-icons-round text-green-500 text-sm mt-1">verified</span>
                       <span className="text-gray-300">{benefit.trim()}</span>
                     </li>
                   ))}

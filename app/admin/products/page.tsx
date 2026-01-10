@@ -7,6 +7,8 @@ type Product = {
   id: string;
   name: string;
   description: string;
+  indications: string;
+  benefits: string;
   price: number;
   discountPercent: number;
   stock: number;
@@ -23,6 +25,8 @@ type Product = {
 type ProductForm = {
   name: string;
   description: string;
+  indications: string;
+  benefits: string;
   price: string;
   stock: string;
   category: string;
@@ -37,6 +41,8 @@ const CATEGORIES = ["Gummies", "Slim Shake", "Fat Burner"];
 const initialFormState: ProductForm = {
   name: "",
   description: "",
+  indications: "",
+  benefits: "",
   price: "",
   stock: "",
   category: "Gummies",

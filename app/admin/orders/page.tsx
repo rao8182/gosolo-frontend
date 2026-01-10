@@ -136,13 +136,22 @@ export default function AdminOrdersPage() {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Order Management</h1>
             <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage and track all customer orders</p>
           </div>
-          <Link
-            href="/admin/products"
-            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors w-fit text-sm"
-          >
-            <span className="material-icons-round text-sm">inventory_2</span>
-            Products
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/products"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors w-fit text-sm"
+            >
+              <span className="material-icons-round text-sm">inventory_2</span>
+              Products
+            </Link>
+            <Link
+              href="/admin/settings"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors w-fit text-sm"
+            >
+              <span className="material-icons-round text-sm">settings</span>
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
+          </div>
         </div>
 
         {/* Messages */}

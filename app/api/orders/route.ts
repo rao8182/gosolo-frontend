@@ -129,7 +129,64 @@ export async function POST(req: Request) {
       calculatedTotal += discountedPrice * item.quantity;
     }
 
-    // Create Razorpay order
+    // Handle COD orders
+    if (paymentMethod === "COD") {
+      const order = await prisma.$transaction(async (tx) => {
+        // Deduct stock for COD orders
+        for (const item of items) {
+          await tx.product.update({
+            where: { id: item.id },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+
+        const newOrder = await tx.order.create({
+          data: {
+            clerkUserId: userId,
+            userEmail: primaryEmail.emailAddress,
+            status: "PENDING",
+            totalAmount: calculatedTotal,
+            items: {
+              create: items.map((item: any) => {
+                const dbProduct = productMap.get(item.id)!;
+                const discountedPrice = Math.round(dbProduct.price * (1 - dbProduct.discountPercent / 100));
+                return {
+                  productId: item.id,
+                  quantity: item.quantity,
+                  price: discountedPrice,
+                };
+              }),
+            },
+          },
+          include: { items: true },
+        });
+
+        await tx.payment.create({
+          data: {
+            orderId: newOrder.id,
+            amount: calculatedTotal,
+            currency: "INR",
+            status: "COD_PENDING",
+            provider: "COD",
+            razorpayOrderId: `COD_${Date.now()}`,
+          },
+        });
+
+        return newOrder;
+      });
+
+      return NextResponse.json(
+        {
+          orderId: order.id,
+          paymentMethod: "COD",
+          amount: calculatedTotal,
+          currency: "INR",
+        },
+        { status: 201, headers: corsHeaders }
+      );
+    }
+
+    // Create Razorpay order for online payments
     const razorpayOrder = await razorpay.orders.create({
       amount: calculatedTotal * 100,
       currency: "INR",

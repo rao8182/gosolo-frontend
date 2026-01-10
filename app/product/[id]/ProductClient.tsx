@@ -327,10 +327,10 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                     {relatedHasDiscount ? (
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 line-through">₹{relatedProduct.price}</span>
-                        <span className="text-white font-bold text-xl">₹{relatedFinalPrice}</span>
+                        <span className="text-primary font-bold text-xl">₹{relatedFinalPrice}</span>
                       </div>
                     ) : (
-                      <p className="text-white font-bold text-xl">₹{relatedProduct.price}</p>
+                      <p className="text-primary font-bold text-xl">₹{relatedProduct.price}</p>
                     )}
                   </Link>
                 );

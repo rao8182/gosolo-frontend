@@ -547,6 +547,30 @@ export default function AdminProductsPage() {
                   <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary focus:outline-none min-h-[80px]" required />
                 </div>
 
+                {/* Indications For Use */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Indications For Use</label>
+                  <textarea 
+                    value={formData.indications} 
+                    onChange={(e) => setFormData({ ...formData, indications: e.target.value })} 
+                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary focus:outline-none min-h-[80px]" 
+                    placeholder="Enter each indication on a new line..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate each point with a new line</p>
+                </div>
+
+                {/* Benefits */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Benefits</label>
+                  <textarea 
+                    value={formData.benefits} 
+                    onChange={(e) => setFormData({ ...formData, benefits: e.target.value })} 
+                    className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary focus:outline-none min-h-[80px]" 
+                    placeholder="Enter each benefit on a new line..."
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate each point with a new line</p>
+                </div>
+
                 {/* Price & Stock */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>

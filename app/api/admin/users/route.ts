@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { isAdminEmail, getAdminUsers, addAdminUser, removeAdminUser, SUPER_ADMIN_EMAIL } from "@/lib/admin";
+import { isAdminEmail, getAdminUsers, addAdminUser, removeAdminUser, SUPER_ADMIN_EMAILS, isSuperAdmin } from "@/lib/admin";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

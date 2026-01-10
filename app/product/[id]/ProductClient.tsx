@@ -11,18 +11,20 @@ type Product = {
   price: number;
   discountPercent: number;
   imageUrl: string;
+  images: string[];
   stock: number;
   createdAt: string;
 };
 
 interface ProductClientProps {
   product: Product;
-  relatedProducts: Product[];
+  relatedProducts: Omit<Product, 'images'>[];
 }
 
 export default function ProductClient({ product, relatedProducts }: ProductClientProps) {
   const addItem = useCartStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const getDiscountedPrice = (price: number, discountPercent: number) => {
     return Math.round(price * (1 - discountPercent / 100));
@@ -45,6 +47,8 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
   };
 
   const isOutOfStock = product.stock === 0;
+  const images = product.images.length > 0 ? product.images : [product.imageUrl];
+  const currentImage = images[selectedImageIndex] || product.imageUrl;
 
   return (
     <main className="min-h-screen pt-32 px-6 bg-black text-white">

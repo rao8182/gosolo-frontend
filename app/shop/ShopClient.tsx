@@ -57,7 +57,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat
-                    ? "bg-white text-black"
+                    ? "bg-primary text-black"
                     : "bg-white/10 text-gray-300 hover:bg-white/20"
                 }`}
                 data-testid={`category-filter-${cat.toLowerCase().replace(" ", "-")}`}
@@ -77,7 +77,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat
-                    ? "bg-white text-black"
+                    ? "bg-primary text-black"
                     : "bg-white/10 text-gray-300"
                 }`}
               >
@@ -93,7 +93,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
             <p className="text-gray-400 mb-4">No products found in this category.</p>
             <button
               onClick={() => setSelectedCategory("All")}
-              className="px-6 py-2 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-colors"
+              className="px-6 py-2 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors"
             >
               View All Products
             </button>
@@ -109,13 +109,13 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
               return (
                 <div
                   key={product.id}
-                  className="relative rounded-xl bg-white/5 border border-white/10 hover:border-white/30 transition-colors group overflow-hidden"
+                  className="relative rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors group overflow-hidden"
                   data-testid={`product-${product.id}`}
                 >
                   {/* Discount Badge */}
                   {hasDiscount && (
                     <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-                      <span className="px-2 sm:px-3 py-1 rounded-full bg-white text-black text-xs sm:text-sm font-bold">
+                      <span className="px-2 sm:px-3 py-1 rounded-full bg-green-500 text-black text-xs sm:text-sm font-bold">
                         {product.discountPercent}% OFF
                       </span>
                     </div>
@@ -128,14 +128,14 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                     </span>
                   </div>
 
-                  {/* Image Container - Fixed aspect ratio */}
+                  {/* Image Container - Fixed aspect ratio, no zoom */}
                   <Link href={`/product/${product.id}`} className="block">
-                    <div className="aspect-square bg-white/5 overflow-hidden">
+                    <div className="aspect-square bg-white/5 overflow-hidden flex items-center justify-center p-4">
                       {product.imageUrl && (
                         <img
                           src={product.imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="max-w-full max-h-full object-contain"
                         />
                       )}
                     </div>
@@ -144,7 +144,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                   {/* Content */}
                   <div className="p-4 sm:p-6">
                     <Link href={`/product/${product.id}`}>
-                      <h3 className="text-base sm:text-lg font-semibold mb-2 hover:text-gray-300 transition-colors line-clamp-1">
+                      <h3 className="text-base sm:text-lg font-semibold mb-2 hover:text-primary transition-colors line-clamp-1">
                         {product.name}
                       </h3>
                     </Link>
@@ -155,11 +155,11 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                       {hasDiscount ? (
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-gray-500 line-through text-base sm:text-lg">₹{product.price}</span>
-                          <span className="text-white font-bold text-lg sm:text-xl">₹{finalPrice}</span>
-                          <span className="text-gray-400 text-xs sm:text-sm">Save ₹{product.price - finalPrice}</span>
+                          <span className="text-primary font-bold text-lg sm:text-xl">₹{finalPrice}</span>
+                          <span className="text-green-400 text-xs sm:text-sm">Save ₹{product.price - finalPrice}</span>
                         </div>
                       ) : (
-                        <p className="text-white font-bold text-lg sm:text-xl">₹{product.price}</p>
+                        <p className="text-primary font-bold text-lg sm:text-xl">₹{product.price}</p>
                       )}
                     </div>
                     
@@ -184,7 +184,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                           alert(`${product.name} added to cart!`);
                         }}
                         disabled={product.stock === 0}
-                        className="flex-1 py-2 rounded-full bg-white text-black font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                        className="flex-1 py-2 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                         data-testid={`add-to-cart-${product.id}`}
                       >
                         {product.stock === 0 ? "Out of Stock" : "Add to cart"}

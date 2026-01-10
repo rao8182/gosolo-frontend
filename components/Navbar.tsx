@@ -58,7 +58,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden lg:block">
-          <div className="p-px rounded-full bg-linear-to-r from-primary/50 to-secondary/50">
+          <div className="p-px rounded-full bg-linear-to-r from-white/20 to-white/10">
             <div className="bg-[#1E1E1E] glass-panel rounded-full px-6 xl:px-8 py-3 flex items-center gap-4 xl:gap-6 text-sm font-medium">
               
               <Link href="/" className={linkClass("/")}>
@@ -82,7 +82,7 @@ export default function Navbar() {
               {/* Admin Link - Only for admins */}
               {isAdmin && (
                 <div className="relative group">
-                  <button className={`flex items-center gap-1 ${isActive("/admin") ? "text-primary font-semibold" : "text-gray-300"} hover:text-primary transition-colors`}>
+                  <button className={`flex items-center gap-1 ${isActive("/admin") ? "text-white font-semibold" : "text-gray-300"} hover:text-white transition-colors`}>
                     Admin
                     <span className="material-icons-round text-sm">expand_more</span>
                   </button>

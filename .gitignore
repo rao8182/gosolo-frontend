@@ -102,3 +102,7 @@ prisma/dev.db-journal
 # Environment files
 *.env
 *.env.*
+-e 
+# Environment files
+*.env
+*.env.*

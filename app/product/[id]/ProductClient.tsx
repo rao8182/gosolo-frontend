@@ -74,11 +74,11 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           {/* Product Images */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+            <div className="relative aspect-square rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center p-4">
               {/* Discount Badge */}
               {hasDiscount && (
                 <div className="absolute top-4 right-4 z-10">
-                  <span className="px-4 py-2 rounded-full bg-white text-black text-lg font-bold">
+                  <span className="px-4 py-2 rounded-full bg-green-500 text-black text-lg font-bold">
                     {product.discountPercent}% OFF
                   </span>
                 </div>
@@ -86,7 +86,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
               <img
                 src={currentImage}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-full object-contain"
               />
               
               {/* Navigation Arrows */}
@@ -115,16 +115,16 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-white/5 p-1 ${
                       selectedImageIndex === index
-                        ? "border-white ring-2 ring-white/30"
+                        ? "border-primary ring-2 ring-primary/30"
                         : "border-white/10 hover:border-white/30"
                     }`}
                   >
                     <img
                       src={img}
                       alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="max-w-full max-h-full object-contain"
                     />
                   </button>
                 ))}

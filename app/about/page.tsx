@@ -20,7 +20,7 @@ export default function AboutPage() {
         </p>
 
         <p className="mt-4 text-gray-400">
-          Whether you're grinding late nights, training hard, or chasing the
+          Whether you&apos;re grinding late nights, training hard, or chasing the
           next win — GO SOLO is built to keep up with you.
         </p>
 

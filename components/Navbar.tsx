@@ -118,13 +118,13 @@ export default function Navbar() {
           {/* Cart Button */}
           <Link 
             href="/cart"
-            className={`relative px-2 sm:px-3 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-1 sm:gap-2 ${isActive("/cart") ? "text-primary" : "text-white"}`}
+            className={`relative px-2 sm:px-3 py-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-1 sm:gap-2 ${isActive("/cart") ? "text-white" : "text-gray-300"}`}
             data-testid="nav-cart-button"
           >
             <span className="material-icons-round text-xl">shopping_cart</span>
             <span className="text-sm font-medium hidden sm:inline">Cart</span>
             {cartItemCount > 0 && (
-              <span className="bg-primary text-black text-xs font-bold rounded-full px-1.5 sm:px-2 py-0.5 min-w-[18px] sm:min-w-[20px] text-center">
+              <span className="bg-white text-black text-xs font-bold rounded-full px-1.5 sm:px-2 py-0.5 min-w-[18px] sm:min-w-[20px] text-center">
                 {cartItemCount}
               </span>
             )}
@@ -134,7 +134,7 @@ export default function Navbar() {
           <SignedOut>
             <Link
               href="/sign-in"
-              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white text-sm"
+              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white text-black hover:bg-gray-200 transition-colors text-sm font-medium"
             >
               <span className="material-icons-round text-sm">person</span>
               Sign In

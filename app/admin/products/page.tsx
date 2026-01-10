@@ -99,6 +99,8 @@ export default function AdminProductsPage() {
     setFormData({
       name: product.name,
       description: product.description,
+      indications: product.indications || "",
+      benefits: product.benefits || "",
       price: product.price.toString(),
       stock: product.stock.toString(),
       category: product.category || "Gummies",

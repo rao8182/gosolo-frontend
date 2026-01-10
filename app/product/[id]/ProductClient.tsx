@@ -148,10 +148,10 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl text-gray-500 line-through">₹{product.price}</span>
-                    <span className="text-4xl font-bold text-primary">₹{finalPrice}</span>
+                    <span className="text-4xl font-bold text-white">₹{finalPrice}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium">
+                    <span className="px-3 py-1 rounded-full bg-white/10 text-white text-sm font-medium">
                       Save ₹{product.price - finalPrice}
                     </span>
                     <span className="text-gray-400 text-sm">per bottle</span>
@@ -159,7 +159,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 </div>
               ) : (
                 <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-bold text-primary">₹{product.price}</span>
+                  <span className="text-4xl font-bold text-white">₹{product.price}</span>
                   <span className="text-gray-400">per bottle</span>
                 </div>
               )}

@@ -10,11 +10,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-primary: #ffffff;
-  --color-secondary: #a0a0a0;
-  --color-accent: #e5e5e5;
+  --color-primary: #f59e0b;
+  --color-secondary: #3b82f6;
   --color-card-bg: #0a0a0a;
-  --color-card-border: #262626;
+  --color-card-border: #222222;
   --color-dark: #050505;
 }
 
@@ -32,19 +31,19 @@ body {
 }
 
 .text-glow {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
 }
 
 .neon-border {
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1),
-    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2),
+    inset 0 0 10px rgba(245, 158, 11, 0.1);
 }
 
 .glass-panel {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   background: rgba(10, 10, 10, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .no-scrollbar::-webkit-scrollbar {

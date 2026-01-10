@@ -3,24 +3,38 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
-
-// Admin emails
-const ADMIN_EMAILS = ["anjaliy471@gmail.com"];
 
 export default function Navbar() {
   const items = useCartStore((state) => state.items);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
   const { user } = useUser();
   const { signOut } = useClerk();
   
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   
-  // Check if user is admin
-  const isAdmin = user?.primaryEmailAddress?.emailAddress && 
-    ADMIN_EMAILS.includes(user.primaryEmailAddress.emailAddress.toLowerCase());
+  // Check if user is admin via API
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      try {
+        const res = await fetch("/api/admin/check");
+        const data = await res.json();
+        setIsAdmin(data.isAdmin === true);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
 
   // Check if link is active
   const isActive = (path: string) => {

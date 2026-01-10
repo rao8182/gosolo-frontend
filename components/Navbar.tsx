@@ -43,7 +43,7 @@ export default function Navbar() {
   };
 
   const linkClass = (path: string) => 
-    `hover:text-primary transition-colors ${isActive(path) ? "text-primary font-semibold" : "text-gray-300"}`;
+    `hover:text-white transition-colors ${isActive(path) ? "text-white font-semibold" : "text-gray-400"}`;
 
   return (
     <nav className="fixed top-0 w-full z-50 pt-4 sm:pt-6 px-4 bg-black/80 backdrop-blur-sm">

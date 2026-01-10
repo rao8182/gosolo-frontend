@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { items, totalAmount } = body;
+    const { items, totalAmount, paymentMethod = "RAZORPAY" } = body;
 
     // Validation: Check cart is not empty
     if (!items || !Array.isArray(items) || items.length === 0) {

@@ -9,7 +9,7 @@ export default function AboutPage() {
         </h1>
 
         <p className="mt-6 text-base sm:text-lg text-gray-300">
-          GO SOLO is India's first functional gummy brand built for gamers,
+          GO SOLO is India&apos;s first functional gummy brand built for gamers,
           students, athletes, and night owls who push limits every single day.
         </p>
 

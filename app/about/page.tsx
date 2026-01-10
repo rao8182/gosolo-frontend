@@ -68,7 +68,7 @@ export default function AboutPage() {
               <span className="material-icons-round text-white mt-1">check_circle</span>
               <div>
                 <h4 className="font-semibold">Customer First</h4>
-                <p className="text-gray-400 text-sm">30-day money-back guarantee. If you're not satisfied, we'll make it right.</p>
+                <p className="text-gray-400 text-sm">30-day money-back guarantee. If you&apos;re not satisfied, we&apos;ll make it right.</p>
               </div>
             </li>
           </ul>

@@ -8,6 +8,8 @@ type Product = {
   id: string;
   name: string;
   description: string;
+  indications: string;
+  benefits: string;
   price: number;
   discountPercent: number;
   imageUrl: string;
@@ -18,7 +20,7 @@ type Product = {
 
 interface ProductClientProps {
   product: Product;
-  relatedProducts: Omit<Product, 'images'>[];
+  relatedProducts: Omit<Product, 'images' | 'indications' | 'benefits'>[];
 }
 
 export default function ProductClient({ product, relatedProducts }: ProductClientProps) {

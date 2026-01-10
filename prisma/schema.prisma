@@ -18,6 +18,8 @@ model Product {
   id              String      @id @default(uuid())
   name            String
   description     String
+  indications     String?     @default("")
+  benefits        String?     @default("")
   price           Int
   discountPercent Int         @default(0)
   stock           Int

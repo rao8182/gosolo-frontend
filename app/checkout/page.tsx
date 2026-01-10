@@ -357,12 +357,16 @@ export default function CheckoutPage() {
                 onClick={placeOrder}
                 disabled={loading || !isEmailVerified}
                 className="w-full mt-4 sm:mt-6 py-3 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="place-order-btn"
               >
-                {loading ? "Processing..." : !isEmailVerified ? "Verify Email First" : "Place Order"}
+                {loading ? "Processing..." : !isEmailVerified ? "Verify Email First" : paymentMethod === "COD" ? "Place COD Order" : "Pay Now"}
               </button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Secured by Razorpay. Your payment info is safe.
+                {paymentMethod === "COD" 
+                  ? "Pay cash when your order arrives at your doorstep."
+                  : "Secured by Razorpay. Your payment info is safe."
+                }
               </p>
             </div>
           </div>

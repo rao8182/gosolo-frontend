@@ -170,21 +170,21 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/") ? "text-white bg-white/5" : "text-gray-300"}`}
+              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/") ? "text-primary bg-white/5" : "text-gray-300"}`}
             >
               Home
             </Link>
             <Link
               href="/shop"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/shop") ? "text-white bg-white/5" : "text-gray-300"}`}
+              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/shop") ? "text-primary bg-white/5" : "text-gray-300"}`}
             >
               Shop
             </Link>
             <Link
               href="/about"
               onClick={() => setMobileMenuOpen(false)}
-              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/about") ? "text-white bg-white/5" : "text-gray-300"}`}
+              className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/about") ? "text-primary bg-white/5" : "text-gray-300"}`}
             >
               About
             </Link>
@@ -193,7 +193,7 @@ export default function Navbar() {
               <Link
                 href="/orders"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/orders") ? "text-white bg-white/5" : "text-gray-300"}`}
+                className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/orders") ? "text-primary bg-white/5" : "text-gray-300"}`}
               >
                 My Orders
               </Link>
@@ -213,7 +213,7 @@ export default function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 px-4 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  className="block py-2 px-4 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
                 >
                   Create Account
                 </Link>
@@ -242,7 +242,7 @@ export default function Navbar() {
                 <Link
                   href="/admin/orders"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/orders") ? "text-white bg-white/5" : "text-gray-300"}`}
+                  className={`block py-2 px-4 rounded-lg hover:bg-white/10 transition-colors ${isActive("/admin/orders") ? "text-primary bg-white/5" : "text-gray-300"}`}
                 >
                   Manage Orders
                 </Link>

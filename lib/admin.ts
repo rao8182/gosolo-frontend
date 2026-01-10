@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
-// Hardcoded super admin who always has access
-const SUPER_ADMIN_EMAIL = "anjaliy471@gmail.com";
+// Hardcoded super admins who always have access and cannot be removed
+const SUPER_ADMIN_EMAILS = [
+  "anjaliy471@gmail.com",
+  "contactus.gosolo@gmail.com",
+];
 
 export async function isAdminEmail(email: string | null | undefined): Promise<boolean> {
   if (!email) return false;
@@ -9,7 +12,7 @@ export async function isAdminEmail(email: string | null | undefined): Promise<bo
   const normalizedEmail = email.toLowerCase().trim();
   
   // Check if super admin
-  if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  if (SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
     return true;
   }
   
@@ -41,8 +44,8 @@ export async function addAdminUser(email: string, addedBy: string) {
 export async function removeAdminUser(email: string) {
   const normalizedEmail = email.toLowerCase().trim();
   
-  // Prevent removing super admin
-  if (normalizedEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  // Prevent removing super admins
+  if (SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === normalizedEmail)) {
     throw new Error("Cannot remove super admin");
   }
   
@@ -51,4 +54,9 @@ export async function removeAdminUser(email: string) {
   });
 }
 
-export { SUPER_ADMIN_EMAIL };
+export function isSuperAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === email.toLowerCase().trim());
+}
+
+export { SUPER_ADMIN_EMAILS };

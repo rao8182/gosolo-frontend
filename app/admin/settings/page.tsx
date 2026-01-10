@@ -167,14 +167,22 @@ export default function AdminSettingsPage() {
           </form>
         </div>
 
-        {/* Super Admin Notice */}
-        {superAdminEmail && (
+        {/* Super Admins Notice */}
+        {superAdminEmails.length > 0 && (
           <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <span className="material-icons-round text-purple-400">admin_panel_settings</span>
+            <div className="flex items-start gap-3">
+              <span className="material-icons-round text-purple-400 mt-0.5">admin_panel_settings</span>
               <div>
-                <p className="font-semibold text-purple-400">Super Admin</p>
-                <p className="text-sm text-gray-400">{superAdminEmail} (cannot be removed)</p>
+                <p className="font-semibold text-purple-400">Super Admins</p>
+                <p className="text-sm text-gray-400 mt-1">These accounts cannot be removed:</p>
+                <ul className="mt-2 space-y-1">
+                  {superAdminEmails.map((email) => (
+                    <li key={email} className="text-sm text-gray-300 flex items-center gap-2">
+                      <span className="material-icons-round text-xs text-purple-400">verified</span>
+                      {email}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>

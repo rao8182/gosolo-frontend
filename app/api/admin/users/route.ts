@@ -112,7 +112,7 @@ export async function DELETE(req: Request) {
     }
 
     // Prevent removing super admin
-    if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (isSuperAdmin(email)) {
       return NextResponse.json(
         { success: false, error: "Cannot remove super admin" },
         { status: 400, headers: corsHeaders }

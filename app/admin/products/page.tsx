@@ -276,6 +276,13 @@ export default function AdminProductsPage() {
               <span className="material-icons-round text-sm">receipt_long</span>
               <span className="hidden sm:inline">Orders</span>
             </Link>
+            <Link
+              href="/admin/settings"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-sm"
+            >
+              <span className="material-icons-round text-sm">settings</span>
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
             <button
               onClick={openAddModal}
               className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-primary text-black font-semibold hover:bg-orange-600 transition-colors text-sm"

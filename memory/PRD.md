@@ -4,11 +4,12 @@
 Build a full-stack e-commerce web application called "GoSolo" with:
 - Product catalog and shopping cart
 - Razorpay payment integration (test mode)
+- Cash on Delivery (COD) payment option
 - Order management for users and admins
 - Stock management with automatic deduction on purchase
 - Admin product management with discounts
 - User authentication with Clerk
-- Role-based admin access
+- Role-based admin access with dynamic user management
 
 ## Tech Stack
 - **Framework**: Next.js 14 (App Router)
@@ -16,16 +17,17 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - **State Management**: Zustand (client-side cart)
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Prisma
-- **Payments**: Razorpay (Test Mode)
+- **Payments**: Razorpay (Test Mode) + COD
 - **Authentication**: Clerk
 - **Image Storage**: Cloudinary
 - **Deployment**: Vercel
 
 ## Database Schema
+- `AdminUser`: { id, email, addedBy, createdAt }
 - `Product`: { id, name, description, price, discountPercent, stock, category, imageUrl, images[], isActive, createdAt, updatedAt }
 - `Order`: { id, clerkUserId, userEmail, totalAmount, status, createdAt }
 - `OrderItem`: { id, orderId, productId, quantity, price }
-- `Payment`: { id, orderId, amount, currency, status, provider, razorpayPaymentId, razorpayOrderId, razorpaySignature }
+- `Payment`: { id, orderId, amount, currency, status, provider (RAZORPAY/COD), razorpayPaymentId, razorpayOrderId, razorpaySignature }
 
 ## Implemented Features
 
@@ -57,7 +59,6 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - [x] Sign-in / Sign-up pages with social OAuth
 - [x] Protected routes (checkout, orders require login)
 - [x] Email verification required for orders
-- [x] Admin email whitelist (anjaliy471@gmail.com)
 - [x] Protected admin routes (`/admin/*`)
 - [x] User orders filtered by clerkUserId
 - [x] Orders store userId and userEmail
@@ -67,6 +68,16 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 - [x] Category filters on shop page
 - [x] Responsive design (mobile, tablet, desktop)
 - [x] Responsive admin dashboard
+- [x] Removed static products from homepage
+
+### Phase 6: Payment & Admin Enhancements (Completed - Jan 10, 2026)
+- [x] Cash on Delivery (COD) payment option
+- [x] Payment method selection UI at checkout
+- [x] COD orders with stock deduction
+- [x] Dynamic admin user management (add/remove admins by email)
+- [x] Admin Settings page (`/admin/settings`)
+- [x] Super admin protection (cannot be removed)
+- [x] Fixed admin page redirection issues
 
 ## Authentication Rules
 | Action | Auth Required | Email Verified |
@@ -79,8 +90,9 @@ Build a full-stack e-commerce web application called "GoSolo" with:
 | Admin access | Yes (admin email) | No |
 
 ## Admin Access
-- Admin email: `anjaliy471@gmail.com`
-- Protected routes: `/admin`, `/admin/products`, `/admin/orders`
+- Super Admin email: `anjaliy471@gmail.com` (cannot be removed)
+- Dynamic admin management via `/admin/settings`
+- Protected routes: `/admin`, `/admin/products`, `/admin/orders`, `/admin/settings`
 
 ## Product Categories
 - Gummies
@@ -116,7 +128,13 @@ CLERK_SECRET_KEY=...
 ### P3 (Future/Backlog)
 - [ ] Product Reviews & Ratings
 - [ ] Admin Dashboard Analytics
-- [ ] Full role management system (replace hardcoded admin email)
 
 ## Session Log
-- **Jan 9, 2026**: Verified home page responsiveness - all sections (hero, products, target audience, reviews, CTA, footer) display correctly across mobile (375px), tablet (768px), and desktop (1920px) viewports. No fixes needed - responsiveness was already implemented.
+- **Jan 9, 2026**: Verified home page responsiveness - all sections display correctly across all viewports.
+- **Jan 10, 2026**: 
+  - Removed static products section (Energy, Focus, Recovery) from homepage
+  - Added Cash on Delivery (COD) payment option alongside Razorpay
+  - Fixed admin page access issues - moved admin check from middleware to API/page level
+  - Added dynamic admin user management with AdminUser database table
+  - Created `/admin/settings` page for managing admin users by email
+  - Super admin (anjaliy471@gmail.com) is protected and cannot be removed

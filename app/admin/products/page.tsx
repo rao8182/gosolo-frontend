@@ -187,6 +187,8 @@ export default function AdminProductsPage() {
     const payload = {
       name: formData.name,
       description: formData.description,
+      indications: formData.indications,
+      benefits: formData.benefits,
       price: parseFloat(formData.price),
       stock: parseInt(formData.stock),
       category: formData.category,

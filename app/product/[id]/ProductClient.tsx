@@ -3,6 +3,7 @@
 import { useCartStore } from "@/store/cartStore";
 import Link from "next/link";
 import { useState } from "react";
+import Footer from "@/components/Footer";
 
 type Product = {
   id: string;
